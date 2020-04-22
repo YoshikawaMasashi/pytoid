@@ -1,0 +1,3 @@
+target/
+pytoid.egg-info/
+*.so
