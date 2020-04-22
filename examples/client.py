@@ -6,7 +6,7 @@ print(ip)
 connect_address = "ws://{}:3012".format(ip)
 
 player = toid.WebSocketPlayer(connect_address)
-player.resource_register("../resource/sf2/sf2.toml")
+player.resource_register("./toid-sample-resource/sf2/sf2.toml")
 player.load_sf2("sf2.test")
 
 portaudio_outputter = toid.PortAudioOutputter(player.get_toid_player())

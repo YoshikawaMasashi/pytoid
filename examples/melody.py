@@ -4,7 +4,7 @@ import toid
 
 if __name__ == "__main__":
     player = toid.LocalPlayer()
-    player.resource_register("../resource/sf2/sf2.toml")
+    player.resource_register("./toid-sample-resource/sf2/sf2.toml")
     player.load_sf2("sf2.test")
     portaudio_outputter = toid.PortAudioOutputter(player.get_toid_player())
 
