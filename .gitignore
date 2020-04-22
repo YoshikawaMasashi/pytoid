@@ -1,3 +1,5 @@
 target/
 pytoid.egg-info/
 *.so
+dist/
+toid.egg-info/

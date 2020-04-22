@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 rayon = "1.0.2"
-pyo3 = "0.8.4"
+pyo3 = { path = "./pyo3", features = ["extension-module"] }
 numpy = "0.7.0"
 toid = "0.0.0-alpha"
