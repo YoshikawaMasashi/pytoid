@@ -42,11 +42,11 @@ class CargoModifiedSdist(SdistCommand):
         with open(cargo_loc, "r") as f:
             cargo_toml = toml.load(f)
 
-        rel_pyo3_path = cargo_toml["dependencies"]["pyo3"]["path"]
-        base_path = os.path.dirname(__file__)
-        abs_pyo3_path = os.path.abspath(os.path.join(base_path, rel_pyo3_path))
+        # rel_pyo3_path = cargo_toml["dependencies"]["pyo3"]["path"]
+        # base_path = os.path.dirname(__file__)
+        # abs_pyo3_path = os.path.abspath(os.path.join(base_path, rel_pyo3_path))
 
-        cargo_toml["dependencies"]["pyo3"]["path"] = abs_pyo3_path
+        # cargo_toml["dependencies"]["pyo3"]["path"] = abs_pyo3_path
 
         with open(cargo_loc, "w") as f:
             toml.dump(cargo_toml, f)
@@ -69,7 +69,7 @@ tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.2a0",
+    version="0.0.3a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
