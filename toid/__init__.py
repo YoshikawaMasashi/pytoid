@@ -1,5 +1,5 @@
 from .toid import PortAudioOutputter, WebSocketPlayer, WebSocketPlayerServer  # NOQA
-from . import sf2  # NOQA
+# from . import sf2  # NOQA
 
 from . import toid
 

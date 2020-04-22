@@ -1,4 +1,4 @@
-use pyo3::prelude::{pyclass, pymethods, PyObject, PyRawObject};
+use pyo3::prelude::{pyclass, pymethods, PyObject, PyResult};
 use std::sync::Arc;
 
 use toid::high_layer_trial::num_lang::send_num_lang;
@@ -27,22 +27,23 @@ pub struct WebSocketPlayer {
 #[pymethods]
 impl WebSocketPlayer {
     #[new]
-    fn new(obj: &PyRawObject, connect_address: String) {
+    fn new(connect_address: String) -> Self{
         let mut player = websocket_player::WebSocketPlayer::new();
         player.connect(connect_address);
-        obj.init(WebSocketPlayer {
+        WebSocketPlayer {
             player: Arc::new(player),
-        })
+        }
     }
 
-    fn set_sf2_name(&self, name: String) {
+    fn set_sf2_name(&self, name: String) -> PyResult<()>{
         self.player
             .send_event(MusicStateEvent::SF2StateEvent(SF2StateEvent::SetSF2Name(
                 name,
             )));
+        Ok(())
     }
 
-    fn send_num_lang(&self, melody_string: String, octave: f32, name: String) {
+    fn send_num_lang(&self, melody_string: String, octave: f32, name: String) -> PyResult<()>{
         send_num_lang(
             melody_string,
             octave,
@@ -52,25 +53,28 @@ impl WebSocketPlayer {
                     dyn Player<MusicState, MusicStateEvent, WaveReader, Vec<i16>, WaveReaderEvent>,
                 >,
         );
+        Ok(())
     }
 
-    fn resource_register(&self, path: String) {
+    fn resource_register(&self, path: String)  -> PyResult<()> {
         self.player.get_resource_manager().register(path).unwrap();
+        Ok(())
     }
 
-    fn load_sf2(&self, name: String) {
+    fn load_sf2(&self, name: String)  -> PyResult<()> {
         self.player
             .send_resource_event(ResourceManagerEvent::LoadSF2(name))
             .unwrap();
+        Ok(())
     }
 
-    fn get_toid_player(&self) -> ToidPlayerHolder {
-        ToidPlayerHolder {
+    fn get_toid_player(&self) -> PyResult<ToidPlayerHolder> {
+        Ok(ToidPlayerHolder {
             player: (Arc::clone(&self.player)
                 as Arc<
                     dyn Player<MusicState, MusicStateEvent, WaveReader, Vec<i16>, WaveReaderEvent>,
                 >),
-        }
+        })
     }
 }
 
@@ -82,11 +86,11 @@ pub struct WebSocketPlayerServer {
 #[pymethods]
 impl WebSocketPlayerServer {
     #[new]
-    fn new(obj: &PyRawObject, connect_address: String) {
+    fn new(connect_address: String) -> Self{
         let mut server = websocket_player::WebSocketPlayerServer::new();
         server.listen(connect_address);
-        obj.init(Self {
+        Self {
             server: Arc::new(server),
-        })
+        }
     }
 }

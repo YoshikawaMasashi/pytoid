@@ -1,4 +1,4 @@
-use pyo3::prelude::{pyclass, pymethods, PyObject, PyRawObject};
+use pyo3::prelude::{pyclass, pymethods, PyObject};
 use std::sync::Arc;
 use std::sync::RwLock;
 
@@ -6,7 +6,7 @@ use toid::outputters::portaudio_outputter;
 
 use super::super::players::toid_player_holder::ToidPlayerHolder;
 
-#[pyclass(module = "toid")]
+#[pyclass]
 pub struct PortAudioOutputter {
     outputter: Arc<RwLock<portaudio_outputter::PortAudioOutputter>>,
 }
@@ -14,12 +14,12 @@ pub struct PortAudioOutputter {
 #[pymethods]
 impl PortAudioOutputter {
     #[new]
-    fn new(obj: &PyRawObject, player: &ToidPlayerHolder) {
-        obj.init(PortAudioOutputter {
+    fn new(player: &ToidPlayerHolder) -> Self{
+        PortAudioOutputter {
             outputter: Arc::new(RwLock::new(
                 portaudio_outputter::PortAudioOutputter::new(Arc::clone(&player.player)).unwrap(),
             )),
-        });
+        }
     }
 
     fn run(&self) {

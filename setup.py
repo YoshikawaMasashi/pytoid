@@ -69,7 +69,7 @@ tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.0a0",
+    version="0.0.2a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
@@ -82,7 +82,7 @@ setup(
     packages=["toid"],
     rust_extensions=[
         RustExtension("toid.toid", "Cargo.toml", debug=True),
-        RustExtension("toid.sf2", "Cargo.toml", debug=True)
+        # RustExtension("toid.sf2", "Cargo.toml", debug=True)
     ],
     install_requires=install_requires,
     tests_require=tests_require,

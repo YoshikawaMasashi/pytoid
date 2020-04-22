@@ -1,3 +1,4 @@
 include Cargo.toml
 include Cargo.lock
 graft src
+graft pyo3
