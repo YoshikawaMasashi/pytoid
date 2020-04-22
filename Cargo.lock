@@ -949,7 +949,9 @@ dependencies = [
 
 [[package]]
 name = "toid"
-version = "0.1.0"
+version = "0.0.0-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12cdfa0d4a4fbf866900d6e5732e06d52842dd5fd2cd49a368f4e3796cf9ced2"
 dependencies = [
  "im",
  "nom",
