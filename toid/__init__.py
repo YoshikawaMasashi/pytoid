@@ -1,12 +1,21 @@
+import os
+import pathlib
+
 from .toid import PortAudioOutputter, WebSocketPlayer, WebSocketPlayerServer  # NOQA
-# from . import sf2  # NOQA
 
 from . import toid
+
+sample_sf2_path = str(
+    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
+)
 
 
 class LocalPlayer(object):
     def __init__(self):
         self.player = toid.LocalPlayer()
+        self.player.resource_register(sample_sf2_path)
+        self.player.load_sf2("sf2.sample")
+        self.player.set_sf2_name("sf2.sample")
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)

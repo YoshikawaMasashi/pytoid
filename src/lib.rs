@@ -2,7 +2,6 @@ use pyo3::prelude::{pymodule, PyModule, PyResult, Python};
 
 mod outputters;
 mod players;
-// mod sf2;
 
 use outputters::portaudio_outputter::PortAudioOutputter;
 use players::local_player::LocalPlayer;

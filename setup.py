@@ -42,12 +42,6 @@ class CargoModifiedSdist(SdistCommand):
         with open(cargo_loc, "r") as f:
             cargo_toml = toml.load(f)
 
-        # rel_pyo3_path = cargo_toml["dependencies"]["pyo3"]["path"]
-        # base_path = os.path.dirname(__file__)
-        # abs_pyo3_path = os.path.abspath(os.path.join(base_path, rel_pyo3_path))
-
-        # cargo_toml["dependencies"]["pyo3"]["path"] = abs_pyo3_path
-
         with open(cargo_loc, "w") as f:
             toml.dump(cargo_toml, f)
 
@@ -82,7 +76,6 @@ setup(
     packages=["toid"],
     rust_extensions=[
         RustExtension("toid.toid", "Cargo.toml", debug=True),
-        # RustExtension("toid.sf2", "Cargo.toml", debug=True)
     ],
     install_requires=install_requires,
     tests_require=tests_require,
@@ -90,4 +83,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     cmdclass={"test": PyTest, "sdist": CargoModifiedSdist},
+    package_data={
+        'toid': ['sample-resource/sf2/*']
+    }
 )
