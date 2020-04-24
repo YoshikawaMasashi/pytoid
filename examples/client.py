@@ -1,12 +1,17 @@
 import toid
 
-print("please input ip (ex. 127.0.0.1):")
-ip = input()
-print(ip)
-connect_address = "ws://{}:3012".format(ip)
+print("please input ip (ex. 127.0.0.1:3012):")
+connect_address = input()
+if len(connect_address) == 0:
+    connect_address = "127.0.0.1:3012"
+print("please input user:")
+user = input()
+print("please input password:")
+password = input()
+connect_address = "ws://{}:{}@{}".format(user, password, connect_address)
 
 player = toid.WebSocketPlayer(connect_address)
 portaudio_outputter = toid.PortAudioOutputter(player.get_toid_player())
 portaudio_outputter.run()
 
-player.send_num_lang("12345 643 2 1", 0.0, "main",)
+player['main'] = '12345 643 2 1'

@@ -33,7 +33,7 @@ impl LocalPlayer {
         }
     }
 
-    fn set_sf2_name(&self, name: String) -> PyResult<()>{
+    fn set_sf2_name(&self, name: String) -> PyResult<()> {
         self.player
             .send_event(MusicStateEvent::SF2StateEvent(SF2StateEvent::SetSF2Name(
                 name,
@@ -41,7 +41,7 @@ impl LocalPlayer {
         Ok(())
     }
 
-    fn send_num_lang(&self, melody_string: String, octave: f32, name: String) -> PyResult<()>{
+    fn send_num_lang(&self, melody_string: String, octave: f32, name: String) -> PyResult<()> {
         send_num_lang(
             melody_string,
             octave,
@@ -54,12 +54,12 @@ impl LocalPlayer {
         Ok(())
     }
 
-    fn resource_register(&self, path: String) -> PyResult<()>{
+    fn resource_register(&self, path: String) -> PyResult<()> {
         self.player.get_resource_manager().register(path).unwrap();
         Ok(())
     }
 
-    fn load_sf2(&self, name: String) -> PyResult<()>{
+    fn load_sf2(&self, name: String) -> PyResult<()> {
         self.player
             .send_resource_event(ResourceManagerEvent::LoadSF2(name))
             .unwrap();

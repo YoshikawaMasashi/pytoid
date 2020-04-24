@@ -14,7 +14,7 @@ pub struct PortAudioOutputter {
 #[pymethods]
 impl PortAudioOutputter {
     #[new]
-    fn new(player: &ToidPlayerHolder) -> Self{
+    fn new(player: &ToidPlayerHolder) -> Self {
         PortAudioOutputter {
             outputter: Arc::new(RwLock::new(
                 portaudio_outputter::PortAudioOutputter::new(Arc::clone(&player.player)).unwrap(),

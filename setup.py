@@ -63,7 +63,7 @@ tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.3a0",
+    version="0.0.4a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
