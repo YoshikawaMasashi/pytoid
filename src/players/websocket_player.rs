@@ -44,10 +44,17 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn send_num_lang(&self, melody_string: String, octave: f32, name: String) -> PyResult<()> {
+    fn send_num_lang(
+        &self,
+        melody_string: String,
+        octave: f32,
+        key: f32,
+        name: String,
+    ) -> PyResult<()> {
         send_num_lang(
             melody_string,
             octave,
+            key,
             name,
             Arc::clone(&self.player)
                 as Arc<

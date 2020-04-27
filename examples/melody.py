@@ -7,8 +7,8 @@ if __name__ == "__main__":
     portaudio_outputter = toid.PortAudioOutputter(player.get_toid_player())
     portaudio_outputter.run()
 
-    player['main'] = '12345 643 2 1'
-    player['sub'] = '1   4   5   1', -1.0
+    player['main'] = '12345 643 2 1   ', 0.0, -3.0
+    player['sub'] = '1   4   5   1   ', -1.0, -3.0
 
     time.sleep(12)
     portaudio_outputter.stop()

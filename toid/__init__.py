@@ -21,8 +21,8 @@ class LocalPlayer(object):
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
-    def send_num_lang(self, melody_string, octave, name):
-        self.player.send_num_lang(melody_string, octave, name)
+    def send_num_lang(self, melody_string, octave, key, name):
+        self.player.send_num_lang(melody_string, octave, key, name)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -36,12 +36,14 @@ class LocalPlayer(object):
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, tuple):
-                if len(value) == 2:
-                    self.send_num_lang(value[0], value[1], key)
+                if len(value) == 3:
+                    self.send_num_lang(value[0], value[1], value[2], key)
+                elif len(value) == 2:
+                    self.send_num_lang(value[0], value[1], 0.0, key)
                 else:
                     raise Exception("invalid value")
             elif isinstance(value, str):
-                self.send_num_lang(value, 0.0, key)
+                self.send_num_lang(value, 0.0, 0.0, key)
             else:
                 raise Exception("invalid value")
         else:
@@ -59,8 +61,8 @@ class WebSocketPlayer(object):
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
-    def send_num_lang(self, melody_string, octave, name):
-        self.player.send_num_lang(melody_string, octave, name)
+    def send_num_lang(self, melody_string, octave, key, name):
+        self.player.send_num_lang(melody_string, octave, key, name)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -74,12 +76,14 @@ class WebSocketPlayer(object):
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, tuple):
-                if len(value) == 2:
-                    self.send_num_lang(value[0], value[1], key)
+                if len(value) == 3:
+                    self.send_num_lang(value[0], value[1], value[2], key)
+                elif len(value) == 2:
+                    self.send_num_lang(value[0], value[1], 0.0, key)
                 else:
                     raise Exception("invalid value")
             elif isinstance(value, str):
-                self.send_num_lang(value, 0.0, key)
+                self.send_num_lang(value, 0.0, 0.0, key)
             else:
                 raise Exception("invalid value")
         else:
