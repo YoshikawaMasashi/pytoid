@@ -22,7 +22,7 @@ class LocalPlayer(object):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
-        self.player.send_num_lang(melody_string, octave, key, name)
+        self.player.send_num_lang(melody_string, float(octave), float(key), name)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -62,7 +62,7 @@ class WebSocketPlayer(object):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
-        self.player.send_num_lang(melody_string, octave, key, name)
+        self.player.send_num_lang(melody_string, float(octave), float(key), name)
 
     def resource_register(self, path):
         self.player.resource_register(path)
