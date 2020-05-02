@@ -1,6 +1,6 @@
 [package]
 name = "pytoid"
-version = "0.0.4-alpha"
+version = "0.0.5-alpha"
 authors = ["masashi yoshikawa <earnest.marshi@gmail.com>"]
 edition = "2018"
 
@@ -12,4 +12,4 @@ crate-type = ["cdylib"]
 rayon = "1.0.2"
 pyo3 = { path = "./pyo3", features = ["extension-module"] }
 numpy = "0.7.0"
-toid = "0.1.0-alpha"
+toid = "0.2.0-alpha"

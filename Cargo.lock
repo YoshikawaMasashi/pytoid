@@ -837,7 +837,7 @@ dependencies = [
 
 [[package]]
 name = "pytoid"
-version = "0.0.4-alpha"
+version = "0.0.5-alpha"
 dependencies = [
  "numpy",
  "pyo3 0.9.2",
@@ -1093,12 +1093,13 @@ dependencies = [
 
 [[package]]
 name = "toid"
-version = "0.1.0-alpha"
+version = "0.2.0-alpha"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae6401755d1e81d2114c04235bf777fae08dc21180a71d0350d4f414e2ae6f25"
+checksum = "620c2f3e51e5dc8047ddd7db0d3f869a9f144a584cc2fe2597d9c863e6fb2a7e"
 dependencies = [
  "base64",
  "im",
+ "log",
  "nom",
  "openssl",
  "portaudio",
