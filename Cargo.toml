@@ -1,6 +1,6 @@
 [package]
 name = "pytoid"
-version = "0.0.5-alpha"
+version = "0.0.6-alpha"
 authors = ["masashi yoshikawa <earnest.marshi@gmail.com>"]
 edition = "2018"
 

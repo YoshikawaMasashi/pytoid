@@ -84,6 +84,13 @@ impl WebSocketPlayer {
                 >),
         })
     }
+
+    fn sync_start(&self) -> PyResult<()> {
+        self.player
+            .send_reader_event(WaveReaderEvent::MoveStart)
+            .unwrap();
+        Ok(())
+    }
 }
 
 #[pyclass]

@@ -66,12 +66,15 @@ class WebSocketPlayer(object):
 
     def resource_register(self, path):
         self.player.resource_register(path)
-    
+
     def load_sf2(self, name):
         self.player.load_sf2(name)
 
     def get_toid_player(self):
         return self.player.get_toid_player()
+
+    def sync_start(self):
+        self.player.sync_start()
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
