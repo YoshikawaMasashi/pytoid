@@ -29,4 +29,8 @@ impl PortAudioOutputter {
     fn stop(&self) {
         self.outputter.write().unwrap().stop().unwrap();
     }
+
+    fn set_volume(&self, volume: f32) {
+        self.outputter.read().unwrap().set_volume(volume);
+    }
 }
