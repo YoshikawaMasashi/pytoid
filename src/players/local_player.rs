@@ -37,7 +37,7 @@ impl LocalPlayer {
         self.player
             .send_event(MusicStateEvent::SF2StateEvent(SF2StateEvent::SetSF2Name(
                 name,
-            )));
+            ))).unwrap();
         Ok(())
     }
 
@@ -57,7 +57,7 @@ impl LocalPlayer {
                 as Arc<
                     dyn Player<MusicState, MusicStateEvent, WaveReader, Vec<i16>, WaveReaderEvent>,
                 >,
-        );
+        ).unwrap();
         Ok(())
     }
 
