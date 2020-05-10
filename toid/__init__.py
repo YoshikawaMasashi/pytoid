@@ -6,23 +6,27 @@ from .toid import PortAudioOutputter, WebSocketPlayerServer  # NOQA
 
 from . import toid
 
-sample_sf2_path = str(
+example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
+)
+example_drums_path = str(
+    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'drums' / 'drums.toml'
 )
 
 
 class LocalPlayer(object):
     def __init__(self):
         self.player = toid.LocalPlayer()
-        self.player.resource_register(sample_sf2_path)
-        self.player.load_sf2("sf2.sample")
-        self.player.set_sf2_name("sf2.sample")
+        self.player.resource_register(example_sf2_path)
+        self.player.resource_register(example_drums_path)
+        self.default_sf2 = "example_sf2"
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
-        self.player.send_num_lang(melody_string, float(octave), float(key), name)
+        self.player.send_num_lang(
+            melody_string, float(octave), float(key), name, self.default_sf2)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -54,15 +58,16 @@ class WebSocketPlayer(object):
     def __init__(self, connect_address):
         self.player = toid.WebSocketPlayer(connect_address)
         time.sleep(0.5)
-        self.player.resource_register(sample_sf2_path)
-        self.player.load_sf2("sf2.sample")
-        self.player.set_sf2_name("sf2.sample")
+        self.player.resource_register(example_sf2_path)
+        self.player.resource_register(example_drums_path)
+        self.default_sf2 = "example_sf2"
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
-        self.player.send_num_lang(melody_string, float(octave), float(key), name)
+        self.player.send_num_lang(
+            melody_string, float(octave), float(key), name, self.default_sf2)
 
     def resource_register(self, path):
         self.player.resource_register(path)
