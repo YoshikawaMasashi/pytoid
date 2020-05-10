@@ -63,7 +63,7 @@ tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.7a0",
+    version="0.0.8a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
@@ -84,6 +84,6 @@ setup(
     zip_safe=False,
     cmdclass={"test": PyTest, "sdist": CargoModifiedSdist},
     package_data={
-        'toid': ['sample-resource/sf2/*']
+        'toid': ['sample-resource/sf2/*', 'sample-resource/drums/*'],
     }
 )
