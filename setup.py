@@ -75,7 +75,7 @@ setup(
     ],
     packages=["toid"],
     rust_extensions=[
-        RustExtension("toid.toid", "Cargo.toml", debug=True),
+        RustExtension("toid.toid", "Cargo.toml", debug=False),
     ],
     install_requires=install_requires,
     tests_require=tests_require,
