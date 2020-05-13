@@ -15,7 +15,7 @@ pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
 }
 
 #[pyfunction]
-fn marge(phrase1: Phrase, phrase2: Phrase) -> Phrase {
+pub fn marge(phrase1: Phrase, phrase2: Phrase) -> Phrase {
     let new_toid_phrase = phrase_operation::marge(phrase1.phrase, phrase2.phrase);
     Phrase {
         phrase: new_toid_phrase,
