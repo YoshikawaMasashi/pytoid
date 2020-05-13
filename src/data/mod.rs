@@ -1,4 +1,4 @@
-mod music_info;
+pub mod music_info;
 
 use pyo3::prelude::{pymodule, PyModule, PyResult, Python};
 use pyo3::wrap_pymodule;

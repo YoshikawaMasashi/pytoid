@@ -1,9 +1,9 @@
 use pyo3::prelude::{pyclass, PyObject};
-use std::sync::Arc;
 
 use toid::data::music_info::phrase;
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Phrase {
-    pub phrase: Arc<phrase::Phrase>,
+    pub phrase: phrase::Phrase,
 }
