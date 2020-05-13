@@ -18,11 +18,17 @@ ph3 = hlt.parse_num_lang('2  1          1 5           5 432  1          1 3     
 ph4 = hlt.change_pitch_in_key(ph3, -4, 4)
 player['h'] = ph4
 
-ph5 = hlt.parse_num_lang('12356' * 8, 1, -4)
+ph5 = hlt.parse_num_lang('12356' * 30, 3, -4)
 ph6 = hlt.shuffle_start(ph5)
-ph7 = hlt.delay(ph6, toid.toid.data.Beat(0.75))
-ph8 = hlt.marge(ph6, ph7)
-player['i'] = ph8
+ph7 = hlt.delay(ph6, toid.toid.data.Beat(1/2 + 1/8))
+ph8 = ph6 * ph7
+ph9 = hlt.delay(ph6, toid.toid.data.Beat(0.75))
+ph10 = hlt.invert_pitch(ph9, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
+ph11 = ph8 * ph10
+player['i'] = ph11
+
+ph12 = hlt.invert_pitch(ph3, toid.toid.data.Pitch(60 - 4 + 2))
+player['j'] = ph12
 
 sp = player.sample_player
 sp['kick'] = 'x x x x '
