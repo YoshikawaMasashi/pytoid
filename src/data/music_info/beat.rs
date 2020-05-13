@@ -1,5 +1,5 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pyproto, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
 use toid::data::music_info::beat;
 
@@ -7,6 +7,15 @@ use toid::data::music_info::beat;
 #[derive(Clone)]
 pub struct Beat {
     pub beat: beat::Beat,
+}
+
+#[pymethods]
+impl Beat {
+    #[new]
+    fn new(beat: f32) -> Self {
+        let beat = beat::Beat::from(beat);
+        Beat { beat }
+    }
 }
 
 #[pyproto]

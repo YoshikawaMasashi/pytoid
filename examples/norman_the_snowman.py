@@ -20,7 +20,9 @@ player['h'] = ph4
 
 ph5 = hlt.parse_num_lang('12356' * 8, 1, -4)
 ph6 = hlt.shuffle_start(ph5)
-player['i'] = ph6
+ph7 = hlt.delay(ph6, toid.toid.data.Beat(0.75))
+ph8 = hlt.marge(ph6, ph7)
+player['i'] = ph8
 
 sp = player.sample_player
 sp['kick'] = 'x x x x '
