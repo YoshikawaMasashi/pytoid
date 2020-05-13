@@ -2,9 +2,9 @@ import os
 import pathlib
 import time
 
-from .toid import PortAudioOutputter, WebSocketPlayerServer  # NOQA
-
 from . import toid
+WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
+PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
@@ -30,7 +30,7 @@ class SamplePlayer(object):
 
 class LocalPlayer(object):
     def __init__(self):
-        self.player = toid.LocalPlayer()
+        self.player = toid.players.LocalPlayer()
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_drums_path)
         self.default_sf2 = "example_sf2"
@@ -76,7 +76,7 @@ class LocalPlayer(object):
 
 class WebSocketPlayer(object):
     def __init__(self, connect_address):
-        self.player = toid.WebSocketPlayer(connect_address)
+        self.player = toid.players.WebSocketPlayer(connect_address)
         time.sleep(0.5)
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_drums_path)
