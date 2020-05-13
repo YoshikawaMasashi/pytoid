@@ -5,6 +5,9 @@ import time
 from . import toid
 WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
 PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
+Phrase = toid.data.Phrase  # NOQA
+Track = toid.data.Track  # NOQA
+parse_num_lang = toid.high_layer_trial.parse_num_lang  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
@@ -59,7 +62,11 @@ class LocalPlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, tuple):
+            if isinstance(value, Phrase):
+                self.player.send_phrase(value, key, self.default_sf2)
+            elif isinstance(value, Track):
+                self.player.send_track(value, key)
+            elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
                 elif len(value) == 2:
@@ -109,7 +116,11 @@ class WebSocketPlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, tuple):
+            if isinstance(value, Phrase):
+                self.player.send_phrase(value, key, self.default_sf2)
+            elif isinstance(value, Track):
+                self.player.send_track(value, key)
+            elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
                 elif len(value) == 2:

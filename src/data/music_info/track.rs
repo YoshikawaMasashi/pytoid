@@ -4,6 +4,7 @@ use pyo3::prelude::{pyclass, pyproto, PyObject, PyResult};
 use toid::data::music_info::track;
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Track {
     pub track: track::Track,
 }

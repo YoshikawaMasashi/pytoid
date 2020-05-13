@@ -4,11 +4,13 @@ use std::sync::Arc;
 use toid::data::music_info::Beat;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
 use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
-use toid::music_state::states::{MusicState, MusicStateEvent};
+use toid::high_layer_trial::music_language::send_phrase;
+use toid::music_state::states::{MusicState, MusicStateEvent, SectionStateEvent};
 use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
 use toid::players::player::Player;
 
+use super::super::data::music_info::{Phrase, Track};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -90,6 +92,44 @@ impl LocalPlayer {
                 >,
         )
         .unwrap();
+        Ok(())
+    }
+
+    fn send_phrase(
+        &self,
+        phrase: Phrase,
+        track_name: String,
+        sf2_name: Option<String>,
+    ) -> PyResult<()> {
+        send_phrase::send_phrase(
+            phrase.phrase,
+            Beat::from(0),
+            track_name,
+            sf2_name,
+            1.0,
+            0.0,
+            Arc::clone(&self.player)
+                as Arc<
+                    dyn Player<
+                        MusicState,
+                        MusicStateEvent,
+                        WaveReader,
+                        (Vec<i16>, Vec<i16>),
+                        WaveReaderEvent,
+                    >,
+                >,
+        )
+        .unwrap();
+        Ok(())
+    }
+
+    fn send_track(&self, track: Track, name: String) -> PyResult<()> {
+        self.player
+            .send_event(MusicStateEvent::SectionStateEvent(
+                Beat::from(0),
+                SectionStateEvent::NewTrack(name.clone(), track.track),
+            ))
+            .unwrap();
         Ok(())
     }
 
