@@ -18,6 +18,10 @@ ph3 = hlt.parse_num_lang('2  1          1 5           5 432  1          1 3     
 ph4 = hlt.change_pitch_in_key(ph3, -4, 4)
 player['h'] = ph4
 
+ph5 = hlt.parse_num_lang('12356' * 8, 1, -4)
+ph6 = hlt.shuffle_start(ph5)
+player['i'] = ph6
+
 sp = player.sample_player
 sp['kick'] = 'x x x x '
 sp['hat'] = '- - - - '
