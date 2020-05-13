@@ -3,6 +3,7 @@ use std::sync::Arc;
 
 use toid::data::music_info::Beat;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
+use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
 use toid::music_state::states::{MusicState, MusicStateEvent};
 use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
@@ -47,6 +48,34 @@ impl LocalPlayer {
             Beat::from(0),
             name,
             Some(sf2_name),
+            1.0,
+            0.0,
+            Arc::clone(&self.player)
+                as Arc<
+                    dyn Player<
+                        MusicState,
+                        MusicStateEvent,
+                        WaveReader,
+                        (Vec<i16>, Vec<i16>),
+                        WaveReaderEvent,
+                    >,
+                >,
+        )
+        .unwrap();
+        Ok(())
+    }
+
+    fn send_sample_lang(
+        &self,
+        phrase_string: String,
+        name: String,
+        sample_name: String,
+    ) -> PyResult<()> {
+        send_sample_lang(
+            phrase_string,
+            Beat::from(0),
+            name,
+            sample_name,
             1.0,
             0.0,
             Arc::clone(&self.player)

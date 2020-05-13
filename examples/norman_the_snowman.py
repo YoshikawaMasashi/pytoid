@@ -12,3 +12,8 @@ player['e'] = '3' * 16 + '5' * 16 + '4' * 32, -2, -4
 player['f'] = '2  1          1 5           5 432  1          1 3       4 3 2 1 ', -1, -4
 player['g'] = '2  1          1 5           5 432  1          1 3       4 3 2 1 ', 0, -4
 player['h'] = '2  1          1 5           5 432  1          1 3       4 3 2 1 ', 1, -4
+
+sp = player.sample_player
+sp['kick'] = 'x x x x '
+sp['hat'] = '- - - - '
+sp['snare'] = '  o   o '
