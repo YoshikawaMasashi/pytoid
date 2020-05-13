@@ -3,7 +3,7 @@ use pyo3::prelude::{pyclass, pyproto, PyObject, PyResult};
 
 use toid::data::music_info::phrase;
 
-use super::super::super::high_layer_trial::marge;
+use super::super::super::high_layer_trial::{concat, marge};
 
 #[pyclass]
 #[derive(Clone)]
@@ -23,5 +23,9 @@ impl PyObjectProtocol for Phrase {
 impl PyNumberProtocol for Phrase {
     fn __mul__(lhs: Self, rhs: Self) -> PyResult<Self> {
         Ok(marge(lhs, rhs))
+    }
+
+    fn __add__(lhs: Self, rhs: Self) -> PyResult<Self> {
+        Ok(concat(lhs, rhs))
     }
 }

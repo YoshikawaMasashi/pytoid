@@ -5,8 +5,10 @@ use pyo3::wrap_pymodule;
 
 #[pymodule]
 fn data(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<music_info::Beat>()?;
     m.add_class::<music_info::Track>()?;
     m.add_class::<music_info::Phrase>()?;
+    m.add_class::<music_info::Pitch>()?;
     Ok(())
 }
 
