@@ -2,9 +2,14 @@ import os
 import pathlib
 import time
 
-from .toid import PortAudioOutputter, WebSocketPlayerServer  # NOQA
+from toid import high_layer_trial  # NOQA
 
 from . import toid
+
+WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
+PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
+Phrase = toid.data.Phrase  # NOQA
+Track = toid.data.Track  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
@@ -30,7 +35,7 @@ class SamplePlayer(object):
 
 class LocalPlayer(object):
     def __init__(self):
-        self.player = toid.LocalPlayer()
+        self.player = toid.players.LocalPlayer()
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_drums_path)
         self.default_sf2 = "example_sf2"
@@ -59,7 +64,11 @@ class LocalPlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, tuple):
+            if isinstance(value, Phrase):
+                self.player.send_phrase(value, key, self.default_sf2)
+            elif isinstance(value, Track):
+                self.player.send_track(value, key)
+            elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
                 elif len(value) == 2:
@@ -76,7 +85,7 @@ class LocalPlayer(object):
 
 class WebSocketPlayer(object):
     def __init__(self, connect_address):
-        self.player = toid.WebSocketPlayer(connect_address)
+        self.player = toid.players.WebSocketPlayer(connect_address)
         time.sleep(0.5)
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_drums_path)
@@ -109,7 +118,11 @@ class WebSocketPlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, tuple):
+            if isinstance(value, Phrase):
+                self.player.send_phrase(value, key, self.default_sf2)
+            elif isinstance(value, Track):
+                self.player.send_track(value, key)
+            elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
                 elif len(value) == 2:

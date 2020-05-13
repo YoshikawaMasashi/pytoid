@@ -9,8 +9,7 @@ name = "toid"
 crate-type = ["cdylib"]
 
 [dependencies]
-rayon = "1.0.2"
 pyo3 = { path = "./pyo3", features = ["extension-module"] }
-numpy = "0.7.0"
+serde_json = "1.0"
 # toid = "0.4.0-alpha"
-toid = { git = "https://github.com/YoshikawaMasashi/toid.git", branch = "develop"  }
+toid = { path = "../toid"  }
