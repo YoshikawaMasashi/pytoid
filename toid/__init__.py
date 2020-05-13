@@ -18,6 +18,24 @@ example_drums_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'drums' / 'drums.toml'
 )
 
+portaudio_outputter_for_quick = None
+
+
+def local_play():
+    global portaudio_outputter_for_quick
+    player = LocalPlayer()
+    portaudio_outputter_for_quick = PortAudioOutputter(player.get_toid_player())
+    portaudio_outputter_for_quick.run()
+    return player
+
+
+def websocket_play(connect_address):
+    global portaudio_outputter_for_quick
+    player = WebSocketPlayer(connect_address)
+    portaudio_outputter_for_quick = PortAudioOutputter(player.get_toid_player())
+    portaudio_outputter_for_quick.run()
+    return player
+
 
 class SamplePlayer(object):
     def __init__(self, player):

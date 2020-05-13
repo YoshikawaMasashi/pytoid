@@ -1,9 +1,7 @@
 import toid
 import toid.high_layer_trial as hlt
 
-player = toid.LocalPlayer()
-portaudio_outputter = toid.PortAudioOutputter(player.get_toid_player())
-portaudio_outputter.run()
+player = toid.local_play()
 
 ph1 = hlt.parse_num_lang('53' * 32, 2, -4)
 ph2 = hlt.parse_num_lang('97' * 16 + '86' * 16, 1, -4)
