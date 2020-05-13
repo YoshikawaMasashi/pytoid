@@ -20,9 +20,9 @@ player['h'] = ph4
 
 ph5 = hlt.parse_num_lang('12356' * 30, 3, -4)
 ph6 = hlt.shuffle_start(ph5)
-ph7 = hlt.delay(ph6, toid.toid.data.Beat(1/2 + 1/8))
+ph7 = hlt.delay(ph6, toid.toid.data.Beat(0.75))
 ph8 = ph6 * ph7
-ph9 = hlt.delay(ph6, toid.toid.data.Beat(0.75))
+ph9 = hlt.delay(ph6, toid.toid.data.Beat(1/2 + 1/8))
 ph10 = hlt.invert_pitch(ph9, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
 ph11 = ph8 * ph10
 player['i'] = ph11
@@ -33,4 +33,4 @@ player['j'] = ph12
 sp = player.sample_player
 sp['kick'] = 'x x x x '
 sp['hat'] = '- - - - '
-sp['snare'] = '   ooo  '
+sp['snare'] = '  o   o '
