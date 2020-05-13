@@ -1,15 +1,17 @@
 use pyo3::prelude::{pyfunction, pymodule, PyModule, PyResult, Python};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
-use toid::high_layer_trial::phrase_operation;
 use toid::high_layer_trial::music_language;
+use toid::high_layer_trial::phrase_operation;
 
 use super::data::music_info::Phrase;
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
     let toid_phrase = music_language::num_lang::parse_num_lang(s, octave, key);
-    Phrase{phrase: toid_phrase}
+    Phrase {
+        phrase: toid_phrase,
+    }
 }
 
 #[pyfunction]
