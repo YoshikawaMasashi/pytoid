@@ -1,10 +1,7 @@
-use std::sync::Arc;
-
 use pyo3::class::PyNumberProtocol;
 use pyo3::prelude::{pyclass, pyfunction, pymodule, pyproto, PyModule, PyObject, PyResult, Python};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
-use toid::data::music_info;
 use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::phrase_operation;
 
@@ -85,7 +82,7 @@ pub fn shuffle_start(phrase: Phrase) -> Phrase {
 #[pyfunction]
 pub fn split_by_condition(phrase: Phrase, condition: Condition) -> (Phrase, Phrase) {
     let (new_toid_phrase1, new_toid_phrase2) =
-        phrase_operation::split_by_condition(phrase.phrase, condition.holder);
+        phrase_operation::split_by_condition(phrase.phrase, condition.value);
     (
         Phrase {
             phrase: new_toid_phrase1,
@@ -96,22 +93,10 @@ pub fn split_by_condition(phrase: Phrase, condition: Condition) -> (Phrase, Phra
     )
 }
 
-// TODO: toidの方をCloneできるように変える
 #[pyclass]
 #[derive(Clone)]
 pub struct Condition {
-    holder: Box<ToidConditionHolder>,
-}
-
-#[derive(Clone)]
-struct ToidConditionHolder {
-    condition: Arc<dyn phrase_operation::Condition>,
-}
-
-impl phrase_operation::Condition for ToidConditionHolder {
-    fn judge(&self, note: music_info::Note) -> bool {
-        self.condition.judge(note)
-    }
+    value: Vec<bool>,
 }
 
 #[pyproto]
@@ -131,69 +116,53 @@ impl PyNumberProtocol for Condition {
 
 #[pyfunction]
 fn and(condition1: Condition, condition2: Condition) -> Condition {
-    let new_toid_condition =
-        phrase_operation::condition::And::new(condition1.holder, condition2.holder);
-    let new_toid_condition = Arc::new(new_toid_condition);
+    let new_toid_condition_value =
+        phrase_operation::condition::and(condition1.value, condition2.value);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 
 #[pyfunction]
 fn or(condition1: Condition, condition2: Condition) -> Condition {
-    let new_toid_condition =
-        phrase_operation::condition::Or::new(condition1.holder, condition2.holder);
-    let new_toid_condition = Arc::new(new_toid_condition);
+    let new_toid_condition_value =
+        phrase_operation::condition::or(condition1.value, condition2.value);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 
 #[pyfunction]
 fn not(condition: Condition) -> Condition {
-    let new_toid_condition = phrase_operation::condition::Not::new(condition.holder);
-    let new_toid_condition = Arc::new(new_toid_condition);
+    let new_toid_condition_value = phrase_operation::condition::not(condition.value);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 
 #[pyfunction]
-fn pitch_larger(pitch: Pitch) -> Condition {
-    let new_toid_condition = phrase_operation::condition::PitchLarger::new(pitch.pitch);
-    let new_toid_condition = Arc::new(new_toid_condition);
+fn pitch_larger(phrase: Phrase, pitch: Pitch) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::pitch_larger(phrase.phrase, pitch.pitch);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 
 #[pyfunction]
-fn start_larger(beat: Beat) -> Condition {
-    let new_toid_condition = phrase_operation::condition::StartLarger::new(beat.beat);
-    let new_toid_condition = Arc::new(new_toid_condition);
+fn start_larger(phrase: Phrase, beat: Beat) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::start_larger(phrase.phrase, beat.beat);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 
 #[pyfunction]
-fn is_down_beat() -> Condition {
-    let new_toid_condition = phrase_operation::condition::IsDownBeat::new();
-    let new_toid_condition = Arc::new(new_toid_condition);
+fn is_down_beat(phrase: Phrase) -> Condition {
+    let new_toid_condition_value = phrase_operation::condition::is_down_beat(phrase.phrase);
     Condition {
-        holder: Box::new(ToidConditionHolder {
-            condition: new_toid_condition,
-        }),
+        value: new_toid_condition_value,
     }
 }
 

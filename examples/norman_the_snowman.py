@@ -1,3 +1,5 @@
+import time
+
 import toid
 import toid.high_layer_trial as hlt
 
@@ -32,3 +34,5 @@ sp = player.sample_player
 sp['kick'] = 'x x x x '
 sp['hat'] = '- - - - '
 sp['snare'] = '  o   o '
+
+time.sleep(30)
