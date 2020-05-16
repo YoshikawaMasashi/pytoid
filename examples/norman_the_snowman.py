@@ -20,31 +20,15 @@ player['h'] = ph4
 ph5 = hlt.invert_pitch(ph3, toid.toid.data.Pitch(60 - 4 + 2))
 player['i'] = ph5
 
-ph6 = hlt.parse_num_lang('12356' * 30, 3, -4)
-ph7 = hlt.shuffle_start(ph6)
-ph8 = hlt.delay(ph7, toid.toid.data.Beat(0.75))
-ph9 = ph7 * ph8
-ph10 = hlt.delay(ph7, toid.toid.data.Beat(1/2 + 1/8))
-ph11 = hlt.invert_pitch(ph10, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
-ph12 = ph9 * ph11
-player['j'] = ph12
-
-track = player['j']
-track = track.set_pan(1.0).set_vol(0.3)
-player['j'] = track
-
-ph6 = hlt.parse_num_lang('12356' * 30, 3, -4)
-ph7 = hlt.shuffle_start(ph6)
-ph8 = hlt.delay(ph7, toid.toid.data.Beat(0.75))
-ph9 = ph7 * ph8
-ph10 = hlt.delay(ph7, toid.toid.data.Beat(1/2 + 1/8))
-ph11 = hlt.invert_pitch(ph10, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
-ph12 = ph9 * ph11
-player['k'] = ph12
-
-track = player['k']
-track = track.set_pan(-1.0).set_vol(0.3)
-player['k'] = track
+for key, pan in zip(['jr', 'jl'], [1.0, -1.0]):
+    ph6 = hlt.parse_num_lang('12356' * 30, 3, -4)
+    ph7 = hlt.shuffle_start(ph6)
+    ph8 = hlt.delay(ph7, toid.toid.data.Beat(0.75))
+    ph9 = ph7 * ph8
+    ph10 = hlt.delay(ph7, toid.toid.data.Beat(1/2 + 1/8))
+    ph11 = hlt.invert_pitch(ph10, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
+    ph12 = ph9 * ph11
+    player[key] = player.make_track(ph12, pan=pan, vol=0.3)
 
 sp = player.sample_player
 sp['kick'] = 'x x x x '

@@ -73,12 +73,17 @@ class LocalPlayer(object):
 
     def resource_register(self, path):
         self.player.resource_register(path)
-    
+
     def load_sf2(self, name):
         self.player.load_sf2(name)
 
     def get_toid_player(self):
         return self.player.get_toid_player()
+
+    def make_track(self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0):
+        if sf2_name is None:
+            sf2_name = self.default_sf2
+        return toid.data.Track(phrase, sf2_name, vol, pan)
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
@@ -136,6 +141,11 @@ class WebSocketPlayer(object):
 
     def get_toid_player(self):
         return self.player.get_toid_player()
+
+    def make_track(self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0):
+        if sf2_name is None:
+            sf2_name = self.default_sf2
+        return toid.data.Track(phrase, sf2_name, vol, pan)
 
     def sync_start(self):
         self.player.sync_start()
