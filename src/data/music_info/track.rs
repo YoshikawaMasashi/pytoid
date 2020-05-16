@@ -47,6 +47,22 @@ impl Track {
             track: self.track.set_pan(pan),
         }
     }
+
+    #[getter]
+    fn ph(&self) -> PyResult<Phrase> {
+        let toid_phrase = self.track.phrase.clone();
+        Ok(Phrase {
+            phrase: toid_phrase,
+        })
+    }
+
+    #[getter]
+    fn phrase(&self) -> PyResult<Phrase> {
+        let toid_phrase = self.track.phrase.clone();
+        Ok(Phrase {
+            phrase: toid_phrase,
+        })
+    }
 }
 
 #[pyproto]
