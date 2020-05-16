@@ -23,6 +23,30 @@ impl Track {
         };
         Self { track: toid_track }
     }
+
+    pub fn set_phrase(&self, phrase: Phrase) -> Self {
+        Self {
+            track: self.track.set_phrase(phrase.phrase),
+        }
+    }
+
+    pub fn set_sf2_name(&self, sf2_name: Option<String>) -> Self {
+        Self {
+            track: self.track.set_sf2_name(sf2_name),
+        }
+    }
+
+    pub fn set_vol(&self, vol: f32) -> Self {
+        Self {
+            track: self.track.set_vol(vol),
+        }
+    }
+
+    pub fn set_pan(&self, pan: f32) -> Self {
+        Self {
+            track: self.track.set_pan(pan),
+        }
+    }
 }
 
 #[pyproto]
