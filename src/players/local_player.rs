@@ -2,7 +2,6 @@ use pyo3::exceptions;
 use pyo3::prelude::{pyclass, pymethods, PyErr, PyObject, PyResult};
 use std::sync::Arc;
 
-use toid::data::music_info::Beat as ToidBeat;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
 use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
 use toid::high_layer_trial::music_language::send_phrase;
@@ -194,6 +193,47 @@ impl LocalPlayer {
             ret.push(Beat { beat: toid_beat });
         }
         Ok(ret)
+    }
+
+    fn get_next_beat(&self, current_beat: Beat) -> PyResult<Beat> {
+        let mut next_beats: Vec<Beat> = vec![];
+        for beat in self.get_section_beats().unwrap().iter() {
+            if current_beat.beat < beat.beat{
+                next_beats.push(beat.clone());
+            }
+        }
+        if next_beats.len() == 0 {
+            Ok(current_beat.clone())
+        } else {
+            let mut next_beat = next_beats[0].clone();
+            for beat in next_beats.iter() {
+                if beat.beat < next_beat.beat {
+                    next_beat = beat.clone();
+                }
+            }
+            Ok(next_beat)
+        }
+    }
+
+    fn get_prev_beat(&self, current_beat: Beat) -> PyResult<Beat> {
+        let mut prev_beats: Vec<Beat> = vec![];
+        for beat in self.get_section_beats().unwrap().iter() {
+            if beat.beat < current_beat.beat {
+                prev_beats.push(beat.clone());
+            }
+        }
+    
+        if prev_beats.len() == 0 {
+            Ok(current_beat.clone())
+        } else {
+            let mut prev_beat = prev_beats[0].clone();
+            for beat in prev_beats.iter() {
+                if prev_beat.beat < beat.beat {
+                    prev_beat = beat.clone();
+                }
+            }
+            Ok(prev_beat)
+        }
     }
 
     fn new_section(&self, beat: Beat) -> PyResult<()> {

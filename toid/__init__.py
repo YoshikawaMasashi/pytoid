@@ -95,6 +95,12 @@ class LocalPlayer(object):
     def get_section_beats(self):
         return self.player.get_section_beats()
 
+    def next_section(self):
+        self.current_beat = self.player.get_next_beat(self.current_beat)
+
+    def prev_section(self):
+        self.current_beat = self.player.get_prev_beat(self.current_beat)
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
@@ -167,6 +173,12 @@ class WebSocketPlayer(object):
 
     def get_section_beats(self):
         return self.player.get_section_beats()
+
+    def next_section(self):
+        self.current_beat = self.player.get_next_beat(self.current_beat)
+
+    def prev_section(self):
+        self.current_beat = self.player.get_prev_beat(self.current_beat)
 
     def sync_start(self):
         self.player.sync_start()
