@@ -59,17 +59,19 @@ class LocalPlayer(object):
         self.default_sf2 = "example_sf2"
         self.default_sample = "example_drums"
         self.sample_player = SamplePlayer(self)
+        self.current_beat = toid.data.Beat(0)
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
         self.player.send_num_lang(
-            melody_string, float(octave), float(key), name, self.default_sf2)
+            melody_string, float(octave), float(key), self.current_beat, name,
+            self.default_sf2)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
-            sample_string, name, self.default_sample)
+            sample_string, self.current_beat, name, self.default_sample)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -80,17 +82,26 @@ class LocalPlayer(object):
     def get_toid_player(self):
         return self.player.get_toid_player()
 
-    def make_track(self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0):
+    def make_track(
+        self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0
+    ):
         if sf2_name is None:
             sf2_name = self.default_sf2
         return toid.data.Track(phrase, sf2_name, vol, pan)
 
+    def new_section(self, beat):
+        self.player.new_section(beat)
+
+    def get_section_beats(self):
+        return self.player.get_section_beats()
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
-                self.player.send_phrase(value, key, self.default_sf2)
+                self.player.send_phrase(
+                    value, self.current_beat, key, self.default_sf2)
             elif isinstance(value, Track):
-                self.player.send_track(value, key)
+                self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
@@ -107,7 +118,7 @@ class LocalPlayer(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            return self.player.get_track(key)
+            return self.player.get_track(key, self.current_beat)
         else:
             raise Exception("invalid key")
 
@@ -121,17 +132,19 @@ class WebSocketPlayer(object):
         self.default_sf2 = "example_sf2"
         self.default_sample = "example_drums"
         self.sample_player = SamplePlayer(self)
+        self.current_beat = toid.data.Beat(0)
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
 
     def send_num_lang(self, melody_string, octave, key, name):
         self.player.send_num_lang(
-            melody_string, float(octave), float(key), name, self.default_sf2)
+            melody_string, float(octave), float(key), self.current_beat, name,
+            self.default_sf2)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
-            sample_string, name, self.default_sample)
+            sample_string, self.current_beat, name, self.default_sample)
 
     def resource_register(self, path):
         self.player.resource_register(path)
@@ -142,10 +155,18 @@ class WebSocketPlayer(object):
     def get_toid_player(self):
         return self.player.get_toid_player()
 
-    def make_track(self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0):
+    def make_track(
+        self, phrase=toid.data.Phrase(), sf2_name=None, vol=1.0, pan=0.0
+    ):
         if sf2_name is None:
             sf2_name = self.default_sf2
         return toid.data.Track(phrase, sf2_name, vol, pan)
+
+    def new_section(self, beat):
+        self.player.new_section(beat)
+
+    def get_section_beats(self):
+        return self.player.get_section_beats()
 
     def sync_start(self):
         self.player.sync_start()
@@ -153,9 +174,10 @@ class WebSocketPlayer(object):
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
-                self.player.send_phrase(value, key, self.default_sf2)
+                self.player.send_phrase(
+                    value, self.current_beat, key, self.default_sf2)
             elif isinstance(value, Track):
-                self.player.send_track(value, key)
+                self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):
                 if len(value) == 3:
                     self.send_num_lang(value[0], value[1], value[2], key)
@@ -172,6 +194,6 @@ class WebSocketPlayer(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            return self.player.get_track(key)
+            return self.player.get_track(key, self.current_beat)
         else:
             raise Exception("invalid key")

@@ -44,6 +44,7 @@ impl WebSocketPlayer {
         melody_string: String,
         octave: f32,
         key: f32,
+        beat: Beat,
         name: String,
         sf2_name: String,
     ) -> PyResult<()> {
@@ -51,7 +52,7 @@ impl WebSocketPlayer {
             melody_string,
             octave,
             key,
-            ToidBeat::from(0),
+            beat.beat,
             name,
             Some(sf2_name),
             1.0,
@@ -74,12 +75,13 @@ impl WebSocketPlayer {
     fn send_sample_lang(
         &self,
         phrase_string: String,
+        beat: Beat,
         name: String,
         sample_name: String,
     ) -> PyResult<()> {
         send_sample_lang(
             phrase_string,
-            ToidBeat::from(0),
+            beat.beat,
             name,
             sample_name,
             1.0,
@@ -102,12 +104,13 @@ impl WebSocketPlayer {
     fn send_phrase(
         &self,
         phrase: Phrase,
+        beat: Beat,
         track_name: String,
         sf2_name: Option<String>,
     ) -> PyResult<()> {
         send_phrase::send_phrase(
             phrase.phrase,
-            ToidBeat::from(0),
+            beat.beat,
             track_name,
             sf2_name,
             1.0,
@@ -127,10 +130,10 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn send_track(&self, track: Track, name: String) -> PyResult<()> {
+    fn send_track(&self, track: Track, beat: Beat, name: String) -> PyResult<()> {
         self.player
             .send_event(MusicStateEvent::SectionStateEvent(
-                ToidBeat::from(0),
+                beat.beat,
                 SectionStateEvent::NewTrack(name.clone(), track.track),
             ))
             .unwrap();
@@ -164,13 +167,13 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn get_track(&self, key: String) -> PyResult<Track> {
+    fn get_track(&self, key: String, beat: Beat) -> PyResult<Track> {
         match self
             .player
             .get_store()
             .get_state()
             .unwrap()
-            .get_section_state_by_beat(ToidBeat::from(0))
+            .get_section_state_by_beat(beat.beat)
             .get_track(key)
         {
             Some(toid_track) => Ok(Track::from_toid_track(toid_track)),
@@ -178,13 +181,13 @@ impl WebSocketPlayer {
         }
     }
 
-    fn get_track_names(&self) -> PyResult<Vec<String>> {
+    fn get_track_names(&self, beat: Beat) -> PyResult<Vec<String>> {
         Ok(self
             .player
             .get_store()
             .get_state()
             .unwrap()
-            .get_section_state_by_beat(ToidBeat::from(0))
+            .get_section_state_by_beat(beat.beat)
             .get_track_names())
     }
 
@@ -201,6 +204,13 @@ impl WebSocketPlayer {
             ret.push(Beat { beat: toid_beat });
         }
         Ok(ret)
+    }
+
+    fn new_section(&self, beat: Beat) -> PyResult<()> {
+        self.player
+            .send_event(MusicStateEvent::NewSection(beat.beat))
+            .unwrap();
+        Ok(())
     }
 }
 

@@ -20,6 +20,11 @@ impl Beat {
 
 #[pyproto]
 impl PyObjectProtocol for Beat {
+    fn __repr__(&self) -> PyResult<String> {
+        let s = serde_json::to_string(&self.beat).unwrap();
+        Ok(s)
+    }
+
     fn __str__(&self) -> PyResult<String> {
         let s = serde_json::to_string(&self.beat).unwrap();
         Ok(s)
