@@ -11,6 +11,12 @@ pub struct Track {
     pub track: track::Track,
 }
 
+impl Track {
+    pub fn from_toid_track(toid_track: track::Track) -> Self {
+        Self { track: toid_track }
+    }
+}
+
 #[pymethods]
 impl Track {
     #[new]

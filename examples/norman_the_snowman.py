@@ -35,4 +35,4 @@ sp['kick'] = 'x x x x '
 sp['hat'] = '- - - - '
 sp['snare'] = '  o   o '
 
-time.sleep(30)
+time.sleep(64)

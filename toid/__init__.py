@@ -98,7 +98,13 @@ class LocalPlayer(object):
             else:
                 raise Exception("invalid value")
         else:
-            raise Exception("invalid value")
+            raise Exception("invalid key")
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.player.get_track(key)
+        else:
+            raise Exception("invalid key")
 
 
 class WebSocketPlayer(object):
@@ -152,4 +158,10 @@ class WebSocketPlayer(object):
             else:
                 raise Exception("invalid value")
         else:
-            raise Exception("invalid value")
+            raise Exception("invalid key")
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.player.get_track(key)
+        else:
+            raise Exception("invalid key")

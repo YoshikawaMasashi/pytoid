@@ -1,4 +1,5 @@
-use pyo3::prelude::{pyclass, pymethods, PyObject, PyResult};
+use pyo3::exceptions;
+use pyo3::prelude::{pyclass, pymethods, PyErr, PyObject, PyResult};
 use std::sync::Arc;
 use std::thread;
 
@@ -161,6 +162,20 @@ impl WebSocketPlayer {
             .send_reader_event(WaveReaderEvent::MoveStart)
             .unwrap();
         Ok(())
+    }
+
+    fn get_track(&self, key: String) -> PyResult<Track> {
+        match self
+            .player
+            .get_store()
+            .get_state()
+            .unwrap()
+            .get_section_state_by_beat(Beat::from(0))
+            .get_track(key)
+        {
+            Some(toid_track) => Ok(Track::from_toid_track(toid_track)),
+            None => Err(PyErr::new::<exceptions::ValueError, _>("Track Not Found")),
+        }
     }
 }
 
