@@ -208,7 +208,7 @@ impl WebSocketPlayer {
     fn get_next_beat(&self, current_beat: Beat) -> PyResult<Beat> {
         let mut next_beats: Vec<Beat> = vec![];
         for beat in self.get_section_beats().unwrap().iter() {
-            if current_beat.beat < beat.beat{
+            if current_beat.beat < beat.beat {
                 next_beats.push(beat.clone());
             }
         }
@@ -232,7 +232,7 @@ impl WebSocketPlayer {
                 prev_beats.push(beat.clone());
             }
         }
-    
+
         if prev_beats.len() == 0 {
             Ok(current_beat.clone())
         } else {

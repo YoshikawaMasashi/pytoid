@@ -650,7 +650,7 @@ dependencies = [
 
 [[package]]
 name = "pytoid"
-version = "0.0.8-alpha"
+version = "0.0.9-alpha"
 dependencies = [
  "pyo3",
  "serde_json",
@@ -858,6 +858,8 @@ dependencies = [
 [[package]]
 name = "toid"
 version = "0.5.0-alpha"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1f02e2ae521eb349d6191c6189b105be91c114924b9a2dec7620f4bf9ea42f0b"
 dependencies = [
  "base64",
  "im",
