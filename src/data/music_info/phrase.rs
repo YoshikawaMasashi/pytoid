@@ -1,5 +1,5 @@
 use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
-use pyo3::prelude::{pyclass, pyproto, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
 use toid::data::music_info::phrase;
 
@@ -9,6 +9,16 @@ use super::super::super::high_layer_trial::{concat, marge};
 #[derive(Clone)]
 pub struct Phrase {
     pub phrase: phrase::Phrase,
+}
+
+#[pymethods]
+impl Phrase {
+    #[new]
+    fn new() -> Self {
+        Self {
+            phrase: phrase::Phrase::new(),
+        }
+    }
 }
 
 #[pyproto]
