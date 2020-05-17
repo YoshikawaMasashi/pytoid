@@ -10,6 +10,8 @@ WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
 PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
 Phrase = toid.data.Phrase  # NOQA
 Track = toid.data.Track  # NOQA
+Pitch = toid.data.Pitch  # NOQA
+Beat = toid.data.Beat  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'

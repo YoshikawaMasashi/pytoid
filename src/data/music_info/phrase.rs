@@ -1,9 +1,10 @@
 use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
-use toid::data::music_info::phrase;
+use toid::data::music_info::{note, phrase};
 
 use super::super::super::high_layer_trial::{concat, marge};
+use super::{Beat, Pitch};
 
 #[pyclass]
 #[derive(Clone)]
@@ -17,6 +18,25 @@ impl Phrase {
     fn new() -> Self {
         Self {
             phrase: phrase::Phrase::new(),
+        }
+    }
+
+    fn add_note(&self, pitch: Pitch, start: Beat, duration: Beat) -> Self {
+        let toid_note = note::Note {
+            pitch: pitch.pitch,
+            start: start.beat,
+            duration: duration.beat,
+        };
+        let new_toid_phrase = self.phrase.add_note(toid_note);
+        Self {
+            phrase: new_toid_phrase,
+        }
+    }
+
+    fn set_length(&self, length: Beat) -> Self {
+        let new_toid_phrase = self.phrase.set_length(length.beat);
+        Self {
+            phrase: new_toid_phrase,
         }
     }
 }

@@ -17,10 +17,10 @@ player['g'] = '2  1          1 5           5 432  1          1 3       4 3 2 1 '
 ph3 = hlt.parse_num_lang('2  1          1 5           5 432  1          1 3       4 3 2 1 ', 0, -4)
 ph4 = hlt.change_pitch_in_key(ph3, -4, 4)
 player['h'] = ph4
-ph5 = hlt.invert_pitch(ph3, toid.toid.data.Pitch(60 - 4 + 2))
+ph5 = hlt.invert_pitch(ph3, toid.Pitch(60 - 4 + 2))
 player['i'] = ph5
 
-player.new_section(toid.toid.data.Beat(32))
+player.new_section(toid.Beat(32))
 player.next_section()
 
 ph1 = hlt.parse_num_lang('53' * 32, 2, -4)
@@ -35,16 +35,16 @@ player['g'] = '2  1          1 5           5 432  1          1 3       4 3 2 1 '
 ph3 = hlt.parse_num_lang('2  1          1 5           5 432  1          1 3       4 3 2 1 ', 0, -4)
 ph4 = hlt.change_pitch_in_key(ph3, -4, 4)
 player['h'] = ph4
-ph5 = hlt.invert_pitch(ph3, toid.toid.data.Pitch(60 - 4 + 2))
+ph5 = hlt.invert_pitch(ph3, toid.Pitch(60 - 4 + 2))
 player['i'] = ph5
 
 for key, pan in zip(['jr', 'jl'], [1.0, -1.0]):
     ph6 = hlt.parse_num_lang('12356' * 30, 3, -4)
     ph7 = hlt.shuffle_start(ph6)
-    ph8 = hlt.delay(ph7, toid.toid.data.Beat(0.75))
+    ph8 = hlt.delay(ph7, toid.Beat(0.75))
     ph9 = ph7 * ph8
-    ph10 = hlt.delay(ph7, toid.toid.data.Beat(1/2 + 1/8))
-    ph11 = hlt.invert_pitch(ph10, toid.toid.data.Pitch(60 - 4 + 2 + 12 * 3))
+    ph10 = hlt.delay(ph7, toid.Beat(1/2 + 1/8))
+    ph11 = hlt.invert_pitch(ph10, toid.Pitch(60 - 4 + 2 + 12 * 3))
     ph12 = ph9 * ph11
     player[key] = player.make_track(ph12, pan=pan, vol=0.3)
 
