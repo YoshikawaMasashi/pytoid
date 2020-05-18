@@ -16,3 +16,5 @@ Condition = toid.high_layer_trial.Condition
 pitch_larger = toid.high_layer_trial.pitch_larger
 start_larger = toid.high_layer_trial.start_larger
 is_down_beat = toid.high_layer_trial.is_down_beat
+
+from .mml import mml_to_phrase
