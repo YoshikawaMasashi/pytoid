@@ -29,7 +29,7 @@ def mml_to_phrase(mml_string):
 
 
 if __name__ == '__main__':
-    ph = m2p("o4l4 ccggaagr ffeeddcr")
+    ph = mml_to_phrase("o4l4 ccggaagr ffeeddcr")
     player = toid.local_play()
     player['a'] = ph
 
