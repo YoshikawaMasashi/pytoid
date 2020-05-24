@@ -1,10 +1,54 @@
-use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
+use pyo3::class::{PyNumberProtocol, PyObjectProtocol, PyMappingProtocol};
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
+use pyo3::class::basic::CompareOp;
 
 use toid::data::music_info::{note, phrase};
+use toid::high_layer_trial::phrase_operation;
 
-use super::super::super::high_layer_trial::{concat, marge};
+use super::super::super::high_layer_trial::{concat, marge, split_by_condition, Condition};
 use super::{Beat, Pitch};
+
+#[pyclass]
+#[derive(Clone)]
+pub struct PitchsProxy {
+    pub phrase: phrase::Phrase,
+}
+
+#[pyproto]
+impl PyObjectProtocol for PitchsProxy {
+    fn __richcmp__(&self, other: Pitch, op: CompareOp) -> PyResult<Condition>{
+        let value = match op {
+            CompareOp::Eq => phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch),
+            CompareOp::Ne => phrase_operation::condition::not(phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch)),
+            CompareOp::Ge => phrase_operation::condition::pitch_larger_equal(self.phrase.clone(), other.pitch),
+            CompareOp::Gt => phrase_operation::condition::pitch_larger(self.phrase.clone(), other.pitch),
+            CompareOp::Le => phrase_operation::condition::pitch_smaller_equal(self.phrase.clone(), other.pitch),
+            CompareOp::Lt => phrase_operation::condition::pitch_smaller(self.phrase.clone(), other.pitch),
+        };
+        Ok(Condition::from(value))
+    }
+}
+
+#[pyclass]
+#[derive(Clone)]
+pub struct StartsProxy {
+    pub phrase: phrase::Phrase,
+}
+
+#[pyproto]
+impl PyObjectProtocol for StartsProxy {
+    fn __richcmp__(&self, other: Beat, op: CompareOp) -> PyResult<Condition>{
+        let value = match op {
+            CompareOp::Eq => phrase_operation::condition::start_equal(self.phrase.clone(), other.beat),
+            CompareOp::Ne => phrase_operation::condition::not(phrase_operation::condition::start_equal(self.phrase.clone(), other.beat)),
+            CompareOp::Ge => phrase_operation::condition::start_larger_equal(self.phrase.clone(), other.beat),
+            CompareOp::Gt => phrase_operation::condition::start_larger(self.phrase.clone(), other.beat),
+            CompareOp::Le => phrase_operation::condition::start_smaller_equal(self.phrase.clone(), other.beat),
+            CompareOp::Lt => phrase_operation::condition::start_smaller(self.phrase.clone(), other.beat),
+        };
+        Ok(Condition::from(value))
+    }
+}
 
 #[pyclass]
 #[derive(Clone)]
@@ -56,6 +100,18 @@ impl Phrase {
     fn get_length(&self) -> f32 {
         self.phrase.length.to_f32()
     }
+
+    fn pitchs(&self) -> PitchsProxy {
+        PitchsProxy{
+            phrase: self.phrase.clone()
+        }
+    }
+
+    fn starts(&self) -> StartsProxy {
+        StartsProxy{
+            phrase: self.phrase.clone()
+        }
+    }
 }
 
 #[pyproto]
@@ -74,5 +130,13 @@ impl PyNumberProtocol for Phrase {
 
     fn __add__(lhs: Self, rhs: Self) -> PyResult<Self> {
         Ok(concat(lhs, rhs))
+    }
+}
+
+#[pyproto]
+impl PyMappingProtocol for Phrase {
+    fn __getitem__(&self, item: Condition) -> PyResult<Phrase> {
+        let (new_phrase, _) = split_by_condition(self.clone(), item);
+        Ok(new_phrase)
     }
 }

@@ -99,6 +99,14 @@ pub struct Condition {
     value: Vec<bool>,
 }
 
+impl From<Vec<bool>> for Condition {
+    fn from(vec: Vec<bool>) -> Self {
+        Condition{
+            value: vec
+        }
+    }
+}
+
 #[pyproto]
 impl PyNumberProtocol for Condition {
     fn __and__(lhs: Self, rhs: Self) -> PyResult<Self> {
@@ -150,9 +158,81 @@ fn pitch_larger(phrase: Phrase, pitch: Pitch) -> Condition {
 }
 
 #[pyfunction]
+fn pitch_larger_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::pitch_larger_equal(phrase.phrase, pitch.pitch);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn pitch_smaller(phrase: Phrase, pitch: Pitch) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::pitch_smaller(phrase.phrase, pitch.pitch);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn pitch_smaller_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::pitch_smaller_equal(phrase.phrase, pitch.pitch);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn pitch_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::pitch_equal(phrase.phrase, pitch.pitch);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
 fn start_larger(phrase: Phrase, beat: Beat) -> Condition {
     let new_toid_condition_value =
         phrase_operation::condition::start_larger(phrase.phrase, beat.beat);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn start_larger_equal(phrase: Phrase, beat: Beat) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::start_larger_equal(phrase.phrase, beat.beat);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn start_smaller(phrase: Phrase, beat: Beat) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::start_smaller(phrase.phrase, beat.beat);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn start_smaller_equal(phrase: Phrase, beat: Beat) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::start_smaller_equal(phrase.phrase, beat.beat);
+    Condition {
+        value: new_toid_condition_value,
+    }
+}
+
+#[pyfunction]
+fn start_equal(phrase: Phrase, beat: Beat) -> Condition {
+    let new_toid_condition_value =
+        phrase_operation::condition::start_equal(phrase.phrase, beat.beat);
     Condition {
         value: new_toid_condition_value,
     }
@@ -185,7 +265,15 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(or))?;
     m.add_wrapped(wrap_pyfunction!(not))?;
     m.add_wrapped(wrap_pyfunction!(pitch_larger))?;
+    m.add_wrapped(wrap_pyfunction!(pitch_larger_equal))?;
+    m.add_wrapped(wrap_pyfunction!(pitch_smaller))?;
+    m.add_wrapped(wrap_pyfunction!(pitch_smaller_equal))?;
+    m.add_wrapped(wrap_pyfunction!(pitch_equal))?;
     m.add_wrapped(wrap_pyfunction!(start_larger))?;
+    m.add_wrapped(wrap_pyfunction!(start_larger_equal))?;
+    m.add_wrapped(wrap_pyfunction!(start_smaller))?;
+    m.add_wrapped(wrap_pyfunction!(start_smaller_equal))?;
+    m.add_wrapped(wrap_pyfunction!(start_equal))?;
     m.add_wrapped(wrap_pyfunction!(is_down_beat))?;
 
     Ok(())
