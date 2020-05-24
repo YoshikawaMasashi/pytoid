@@ -44,7 +44,11 @@ impl Phrase {
         let toid_notes_vec = self.phrase.note_vec();
         let mut ret = vec![];
         for toid_note in toid_notes_vec.iter() {
-            ret.push((toid_note.pitch.get_f32_pitch(), toid_note.start.to_f32(), toid_note.duration.to_f32()));
+            ret.push((
+                toid_note.pitch.get_f32_pitch(),
+                toid_note.start.to_f32(),
+                toid_note.duration.to_f32(),
+            ));
         }
         ret
     }

@@ -5,7 +5,7 @@ use pyo3::{wrap_pyfunction, wrap_pymodule};
 use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::phrase_operation;
 
-use super::data::music_info::{Beat, Phrase, Pitch};
+use super::data::music_info::{Beat, Phrase, Pitch, PitchInOctave, PitchInterval};
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
@@ -16,16 +16,16 @@ pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
 }
 
 #[pyfunction]
-fn change_key(phrase: Phrase, key: f32) -> Phrase {
-    let new_toid_phrase = phrase_operation::change_key(phrase.phrase, key);
+fn change_key(phrase: Phrase, key: PitchInterval) -> Phrase {
+    let new_toid_phrase = phrase_operation::change_key(phrase.phrase, key.interval);
     Phrase {
         phrase: new_toid_phrase,
     }
 }
 
 #[pyfunction]
-fn change_pitch_in_key(phrase: Phrase, key: f32, pitch: usize) -> Phrase {
-    let new_toid_phrase = phrase_operation::change_pitch_in_key(phrase.phrase, key, pitch);
+fn change_pitch_in_key(phrase: Phrase, key: PitchInOctave, pitch: usize) -> Phrase {
+    let new_toid_phrase = phrase_operation::change_pitch_in_key(phrase.phrase, key.pitch, pitch);
     Phrase {
         phrase: new_toid_phrase,
     }
