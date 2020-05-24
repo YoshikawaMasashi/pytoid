@@ -1,6 +1,6 @@
-use pyo3::class::{PyNumberProtocol, PyObjectProtocol, PyMappingProtocol};
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 use pyo3::class::basic::CompareOp;
+use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
 use toid::data::music_info::{note, phrase};
 use toid::high_layer_trial::phrase_operation;
@@ -16,14 +16,26 @@ pub struct PitchsProxy {
 
 #[pyproto]
 impl PyObjectProtocol for PitchsProxy {
-    fn __richcmp__(&self, other: Pitch, op: CompareOp) -> PyResult<Condition>{
+    fn __richcmp__(&self, other: Pitch, op: CompareOp) -> PyResult<Condition> {
         let value = match op {
-            CompareOp::Eq => phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch),
-            CompareOp::Ne => phrase_operation::condition::not(phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch)),
-            CompareOp::Ge => phrase_operation::condition::pitch_larger_equal(self.phrase.clone(), other.pitch),
-            CompareOp::Gt => phrase_operation::condition::pitch_larger(self.phrase.clone(), other.pitch),
-            CompareOp::Le => phrase_operation::condition::pitch_smaller_equal(self.phrase.clone(), other.pitch),
-            CompareOp::Lt => phrase_operation::condition::pitch_smaller(self.phrase.clone(), other.pitch),
+            CompareOp::Eq => {
+                phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch)
+            }
+            CompareOp::Ne => phrase_operation::condition::not(
+                phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch),
+            ),
+            CompareOp::Ge => {
+                phrase_operation::condition::pitch_larger_equal(self.phrase.clone(), other.pitch)
+            }
+            CompareOp::Gt => {
+                phrase_operation::condition::pitch_larger(self.phrase.clone(), other.pitch)
+            }
+            CompareOp::Le => {
+                phrase_operation::condition::pitch_smaller_equal(self.phrase.clone(), other.pitch)
+            }
+            CompareOp::Lt => {
+                phrase_operation::condition::pitch_smaller(self.phrase.clone(), other.pitch)
+            }
         };
         Ok(Condition::from(value))
     }
@@ -37,14 +49,26 @@ pub struct StartsProxy {
 
 #[pyproto]
 impl PyObjectProtocol for StartsProxy {
-    fn __richcmp__(&self, other: Beat, op: CompareOp) -> PyResult<Condition>{
+    fn __richcmp__(&self, other: Beat, op: CompareOp) -> PyResult<Condition> {
         let value = match op {
-            CompareOp::Eq => phrase_operation::condition::start_equal(self.phrase.clone(), other.beat),
-            CompareOp::Ne => phrase_operation::condition::not(phrase_operation::condition::start_equal(self.phrase.clone(), other.beat)),
-            CompareOp::Ge => phrase_operation::condition::start_larger_equal(self.phrase.clone(), other.beat),
-            CompareOp::Gt => phrase_operation::condition::start_larger(self.phrase.clone(), other.beat),
-            CompareOp::Le => phrase_operation::condition::start_smaller_equal(self.phrase.clone(), other.beat),
-            CompareOp::Lt => phrase_operation::condition::start_smaller(self.phrase.clone(), other.beat),
+            CompareOp::Eq => {
+                phrase_operation::condition::start_equal(self.phrase.clone(), other.beat)
+            }
+            CompareOp::Ne => phrase_operation::condition::not(
+                phrase_operation::condition::start_equal(self.phrase.clone(), other.beat),
+            ),
+            CompareOp::Ge => {
+                phrase_operation::condition::start_larger_equal(self.phrase.clone(), other.beat)
+            }
+            CompareOp::Gt => {
+                phrase_operation::condition::start_larger(self.phrase.clone(), other.beat)
+            }
+            CompareOp::Le => {
+                phrase_operation::condition::start_smaller_equal(self.phrase.clone(), other.beat)
+            }
+            CompareOp::Lt => {
+                phrase_operation::condition::start_smaller(self.phrase.clone(), other.beat)
+            }
         };
         Ok(Condition::from(value))
     }
@@ -102,14 +126,14 @@ impl Phrase {
     }
 
     fn pitchs(&self) -> PitchsProxy {
-        PitchsProxy{
-            phrase: self.phrase.clone()
+        PitchsProxy {
+            phrase: self.phrase.clone(),
         }
     }
 
     fn starts(&self) -> StartsProxy {
-        StartsProxy{
-            phrase: self.phrase.clone()
+        StartsProxy {
+            phrase: self.phrase.clone(),
         }
     }
 }

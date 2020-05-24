@@ -101,9 +101,7 @@ pub struct Condition {
 
 impl From<Vec<bool>> for Condition {
     fn from(vec: Vec<bool>) -> Self {
-        Condition{
-            value: vec
-        }
+        Condition { value: vec }
     }
 }
 

@@ -20,7 +20,7 @@ player['h'] = ph4
 ph5 = hlt.invert_pitch(ph3, toid.Pitch(60 - 4 + 2))
 player['i'] = ph5
 
-player.new_section(toid.Beat(32))
+player.new_section(32)
 player.next_section()
 
 ph1 = hlt.parse_num_lang('53' * 32, 2, -4)

@@ -1,5 +1,5 @@
 use pyo3::exceptions;
-use pyo3::prelude::{pyclass, pymethods, PyErr, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python};
 use std::sync::Arc;
 
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
@@ -236,7 +236,8 @@ impl LocalPlayer {
         }
     }
 
-    fn new_section(&self, beat: Beat) -> PyResult<()> {
+    fn new_section<'p>(&self, py: Python<'p>, beat: &PyAny) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         self.player
             .send_event(MusicStateEvent::NewSection(beat.beat))
             .unwrap();
