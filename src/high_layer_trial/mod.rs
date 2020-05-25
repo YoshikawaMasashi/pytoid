@@ -140,7 +140,9 @@ impl Condition {
         }
 
         let np_condition: Vec<bool> = condition.extract(py)?;
-        Ok(Condition{value: np_condition})
+        Ok(Condition {
+            value: np_condition,
+        })
     }
 }
 
