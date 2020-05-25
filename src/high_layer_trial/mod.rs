@@ -5,6 +5,7 @@ use pyo3::prelude::{
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
 use toid::high_layer_trial::music_language;
+use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
 
 use super::data::music_info::{Beat, Phrase, Pitch, PitchInOctave, PitchInterval};
@@ -102,6 +103,57 @@ pub fn split_by_condition(phrase: Phrase, condition: Condition) -> (Phrase, Phra
             phrase: new_toid_phrase2,
         },
     )
+}
+
+#[pyfunction]
+pub fn round_line<'p>(
+    py: Python<'p>,
+    line: (Vec<&PyAny>, Vec<&PyAny>),
+    start: Vec<&PyAny>,
+    duration: Vec<&PyAny>,
+    scale: Vec<&PyAny>,
+) -> PyResult<Phrase> {
+    let mut line_beat = vec![];
+    let mut line_pitch = vec![];
+    for (lb, lp) in line.0.iter().zip(line.1.iter()) {
+        let lb = Beat::from_py_any(py, lb)?;
+        let lp = Pitch::from_py_any(py, lp)?;
+        line_beat.push(lb);
+        line_pitch.push(lp);
+    }
+    let line = (line_beat, line_pitch);
+
+    let mut start_ = vec![];
+    for s in start.iter() {
+        let s = Beat::from_py_any(py, s)?;
+        start_.push(s);
+    }
+    let start = start_;
+
+    let mut duration_ = vec![];
+    for d in duration.iter() {
+        let d = Beat::from_py_any(py, d)?;
+        duration_.push(d);
+    }
+    let duration = duration_;
+
+    let mut scale_ = vec![];
+    for s in scale.iter() {
+        let s = PitchInOctave::from_py_any(py, s)?;
+        scale_.push(s);
+    }
+    let scale = scale_;
+
+    let line = (
+        line.0.iter().map(|beat| beat.beat).collect(),
+        line.1.iter().map(|pitch| pitch.pitch).collect(),
+    );
+    let start = start.iter().map(|beat| beat.beat).collect();
+    let duration = duration.iter().map(|duration| duration.beat).collect();
+    let scale = scale.iter().map(|pitch| pitch.pitch).collect();
+
+    let phrase = phrase_operation::round_line(line, start, duration, scale);
+    Ok(Phrase { phrase })
 }
 
 #[pyclass]
@@ -280,6 +332,13 @@ fn is_down_beat(phrase: Phrase) -> Condition {
     }
 }
 
+#[pyfunction]
+fn parlin_noise(size: usize, degree: f32, max: f32, min: f32) -> Vec<f32> {
+    let noise = toid_num::parlin_noise_seq(size, degree, None);
+    let noise = toid_num::change_max_min(&noise, max, min);
+    noise
+}
+
 #[pymodule]
 fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(parse_num_lang))?;
@@ -293,6 +352,7 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(marge))?;
     m.add_wrapped(wrap_pyfunction!(shuffle_start))?;
     m.add_wrapped(wrap_pyfunction!(split_by_condition))?;
+    m.add_wrapped(wrap_pyfunction!(round_line))?;
 
     m.add_class::<Condition>()?;
     m.add_wrapped(wrap_pyfunction!(and))?;
@@ -309,6 +369,8 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(start_smaller_equal))?;
     m.add_wrapped(wrap_pyfunction!(start_equal))?;
     m.add_wrapped(wrap_pyfunction!(is_down_beat))?;
+
+    m.add_wrapped(wrap_pyfunction!(parlin_noise))?;
 
     Ok(())
 }

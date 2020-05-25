@@ -1,4 +1,5 @@
 from . import toid
+from .mml import mml_to_phrase
 
 parse_num_lang = toid.high_layer_trial.parse_num_lang
 
@@ -11,10 +12,11 @@ invert_start_order = toid.high_layer_trial.invert_start_order
 marge = toid.high_layer_trial.marge
 shuffle_start = toid.high_layer_trial.shuffle_start
 split_by_condition = toid.high_layer_trial.split_by_condition
+round_line = toid.high_layer_trial.round_line
 
 Condition = toid.high_layer_trial.Condition
 pitch_larger = toid.high_layer_trial.pitch_larger
 start_larger = toid.high_layer_trial.start_larger
 is_down_beat = toid.high_layer_trial.is_down_beat
 
-from .mml import mml_to_phrase
+parlin_noise = toid.high_layer_trial.parlin_noise
