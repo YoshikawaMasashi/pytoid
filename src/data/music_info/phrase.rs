@@ -3,7 +3,9 @@ use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions::ValueError;
 use pyo3::prelude::{pyclass, pymethods, pyproto, Py, PyAny, PyObject, PyResult, Python};
+use pyo3::types::PySlice;
 
+use toid::data::music_info::beat as toid_beat;
 use toid::data::music_info::{note, phrase};
 use toid::high_layer_trial::phrase_operation;
 
@@ -182,8 +184,55 @@ impl PyNumberProtocol for Phrase {
 
 #[pyproto]
 impl PyMappingProtocol for Phrase {
-    fn __getitem__(&self, item: Condition) -> PyResult<Phrase> {
-        let (new_phrase, _) = split_by_condition(self.clone(), item);
-        Ok(new_phrase)
+    fn __getitem__(&self, item: &PyAny) -> PyResult<Phrase> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+
+        if let Ok(cond) = Condition::from_py_any(py, item) {
+            let (new_phrase, _) = split_by_condition(self.clone(), cond);
+            return Ok(new_phrase);
+        }
+
+        let slice: PyObject = item.into();
+        let slice: &PySlice = slice.cast_as(py)?;
+
+        let start: &PyAny = slice.getattr::<String>("start".to_string())?;
+        let stop: &PyAny = slice.getattr::<String>("stop".to_string())?;
+        match (start.is_none(), stop.is_none()) {
+            (true, true) => Ok(self.clone()),
+            (true, false) => {
+                let stop = Beat::from_py_any(py, stop)?;
+                let cond =
+                    phrase_operation::condition::start_smaller(self.phrase.clone(), stop.beat);
+                let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
+                let phrase = phrase.set_length(stop.beat);
+                Ok(Self { phrase })
+            }
+            (false, true) => {
+                let start = Beat::from_py_any(py, start)?;
+                let cond = phrase_operation::condition::start_larger_equal(
+                    self.phrase.clone(),
+                    start.beat,
+                );
+                let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
+                let phrase = phrase_operation::delay(phrase, toid_beat::Beat::from(0) - start.beat);
+                Ok(Self { phrase })
+            }
+            (false, false) => {
+                let start = Beat::from_py_any(py, start)?;
+                let stop = Beat::from_py_any(py, stop)?;
+                let cond = phrase_operation::condition::and(
+                    phrase_operation::condition::start_larger_equal(
+                        self.phrase.clone(),
+                        start.beat,
+                    ),
+                    phrase_operation::condition::start_smaller(self.phrase.clone(), stop.beat),
+                );
+                let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
+                let phrase = phrase_operation::delay(phrase, toid_beat::Beat::from(0) - start.beat);
+                let phrase = phrase.set_length(stop.beat - start.beat);
+                Ok(Self { phrase })
+            }
+        }
     }
 }

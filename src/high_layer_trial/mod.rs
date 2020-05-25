@@ -131,6 +131,13 @@ impl PyNumberProtocol for Condition {
     }
 }
 
+impl Condition {
+    pub fn from_py_any<'p>(py: Python<'p>, condition: &PyAny) -> PyResult<Condition> {
+        let condition: PyObject = condition.into();
+        condition.extract(py)
+    }
+}
+
 #[pyfunction]
 fn and(condition1: Condition, condition2: Condition) -> Condition {
     let new_toid_condition_value =
@@ -218,7 +225,7 @@ fn start_larger<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Co
 }
 
 #[pyfunction]
-fn start_larger_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+pub fn start_larger_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
     let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_larger_equal(phrase.phrase, beat.beat);
@@ -228,7 +235,7 @@ fn start_larger_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyRes
 }
 
 #[pyfunction]
-fn start_smaller<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+pub fn start_smaller<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
     let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_smaller(phrase.phrase, beat.beat);
