@@ -1,19 +1,19 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
 
-use toid::data::music_info::pitch;
+use toid::data::music_info::pitch as toid_pitch;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct Pitch {
-    pub pitch: pitch::Pitch,
+    pub pitch: toid_pitch::Pitch,
 }
 
 #[pymethods]
 impl Pitch {
     #[new]
     fn new(pitch: f32) -> Self {
-        let pitch = pitch::Pitch::from(pitch);
+        let pitch = toid_pitch::Pitch::from(pitch);
         Pitch { pitch }
     }
 }
@@ -23,5 +23,26 @@ impl PyObjectProtocol for Pitch {
     fn __str__(&self) -> PyResult<String> {
         let s = serde_json::to_string(&self.pitch).unwrap();
         Ok(s)
+    }
+}
+
+impl From<f32> for Pitch {
+    fn from(pitch: f32) -> Self {
+        Pitch {
+            pitch: toid_pitch::Pitch::from(pitch),
+        }
+    }
+}
+
+impl Pitch {
+    pub fn from_py_any<'p>(py: Python<'p>, pitch: &PyAny) -> PyResult<Pitch> {
+        let pitch: PyObject = pitch.into();
+        match pitch.extract(py) {
+            Ok(pitch) => Ok(pitch),
+            Err(_e) => {
+                let pitch: f32 = pitch.extract(py)?;
+                Ok(Pitch::from(pitch))
+            }
+        }
     }
 }

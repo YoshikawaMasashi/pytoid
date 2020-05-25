@@ -1,5 +1,7 @@
 use pyo3::class::PyNumberProtocol;
-use pyo3::prelude::{pyclass, pyfunction, pymodule, pyproto, PyModule, PyObject, PyResult, Python};
+use pyo3::prelude::{
+    pyclass, pyfunction, pymodule, pyproto, PyAny, PyModule, PyObject, PyResult, Python,
+};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
 use toid::high_layer_trial::music_language;
@@ -16,19 +18,26 @@ pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
 }
 
 #[pyfunction]
-fn change_key(phrase: Phrase, key: PitchInterval) -> Phrase {
+fn change_key<'p>(py: Python<'p>, phrase: Phrase, key: &PyAny) -> PyResult<Phrase> {
+    let key = PitchInterval::from_py_any(py, key)?;
     let new_toid_phrase = phrase_operation::change_key(phrase.phrase, key.interval);
-    Phrase {
+    Ok(Phrase {
         phrase: new_toid_phrase,
-    }
+    })
 }
 
 #[pyfunction]
-fn change_pitch_in_key(phrase: Phrase, key: PitchInOctave, pitch: usize) -> Phrase {
+fn change_pitch_in_key<'p>(
+    py: Python<'p>,
+    phrase: Phrase,
+    key: &PyAny,
+    pitch: usize,
+) -> PyResult<Phrase> {
+    let key = PitchInOctave::from_py_any(py, key)?;
     let new_toid_phrase = phrase_operation::change_pitch_in_key(phrase.phrase, key.pitch, pitch);
-    Phrase {
+    Ok(Phrase {
         phrase: new_toid_phrase,
-    }
+    })
 }
 
 #[pyfunction]
@@ -40,19 +49,21 @@ pub fn concat(phrase1: Phrase, phrase2: Phrase) -> Phrase {
 }
 
 #[pyfunction]
-pub fn delay(phrase: Phrase, delay: Beat) -> Phrase {
+pub fn delay<'p>(py: Python<'p>, phrase: Phrase, delay: &PyAny) -> PyResult<Phrase> {
+    let delay = Beat::from_py_any(py, delay)?;
     let new_toid_phrase = phrase_operation::delay(phrase.phrase, delay.beat);
-    Phrase {
+    Ok(Phrase {
         phrase: new_toid_phrase,
-    }
+    })
 }
 
 #[pyfunction]
-pub fn invert_pitch(phrase: Phrase, center: Pitch) -> Phrase {
+pub fn invert_pitch<'p>(py: Python<'p>, phrase: Phrase, center: &PyAny) -> PyResult<Phrase> {
+    let center = Pitch::from_py_any(py, center)?;
     let new_toid_phrase = phrase_operation::invert_pitch(phrase.phrase, center.pitch);
-    Phrase {
+    Ok(Phrase {
         phrase: new_toid_phrase,
-    }
+    })
 }
 
 #[pyfunction]
@@ -147,93 +158,103 @@ fn not(condition: Condition) -> Condition {
 }
 
 #[pyfunction]
-fn pitch_larger(phrase: Phrase, pitch: Pitch) -> Condition {
+fn pitch_larger<'p>(py: Python<'p>, phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+    let pitch = Pitch::from_py_any(py, pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_larger(phrase.phrase, pitch.pitch);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn pitch_larger_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+fn pitch_larger_equal<'p>(py: Python<'p>, phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+    let pitch = Pitch::from_py_any(py, pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_larger_equal(phrase.phrase, pitch.pitch);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn pitch_smaller(phrase: Phrase, pitch: Pitch) -> Condition {
+fn pitch_smaller<'p>(py: Python<'p>, phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+    let pitch = Pitch::from_py_any(py, pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_smaller(phrase.phrase, pitch.pitch);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn pitch_smaller_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+fn pitch_smaller_equal<'p>(py: Python<'p>, phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+    let pitch = Pitch::from_py_any(py, pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_smaller_equal(phrase.phrase, pitch.pitch);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn pitch_equal(phrase: Phrase, pitch: Pitch) -> Condition {
+fn pitch_equal<'p>(py: Python<'p>, phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+    let pitch = Pitch::from_py_any(py, pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_equal(phrase.phrase, pitch.pitch);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn start_larger(phrase: Phrase, beat: Beat) -> Condition {
+fn start_larger<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+    let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_larger(phrase.phrase, beat.beat);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn start_larger_equal(phrase: Phrase, beat: Beat) -> Condition {
+fn start_larger_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+    let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_larger_equal(phrase.phrase, beat.beat);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn start_smaller(phrase: Phrase, beat: Beat) -> Condition {
+fn start_smaller<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+    let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_smaller(phrase.phrase, beat.beat);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn start_smaller_equal(phrase: Phrase, beat: Beat) -> Condition {
+fn start_smaller_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+    let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_smaller_equal(phrase.phrase, beat.beat);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]
-fn start_equal(phrase: Phrase, beat: Beat) -> Condition {
+fn start_equal<'p>(py: Python<'p>, phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+    let beat = Beat::from_py_any(py, beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_equal(phrase.phrase, beat.beat);
-    Condition {
+    Ok(Condition {
         value: new_toid_condition_value,
-    }
+    })
 }
 
 #[pyfunction]

@@ -1,6 +1,8 @@
 use pyo3::class::basic::CompareOp;
 use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
+use pyo3::conversion::ToPyObject;
+use pyo3::exceptions::ValueError;
+use pyo3::prelude::{pyclass, pymethods, pyproto, Py, PyAny, PyObject, PyResult, Python};
 
 use toid::data::music_info::{note, phrase};
 use toid::high_layer_trial::phrase_operation;
@@ -83,29 +85,39 @@ pub struct Phrase {
 #[pymethods]
 impl Phrase {
     #[new]
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             phrase: phrase::Phrase::new(),
         }
     }
 
-    fn add_note(&self, pitch: Pitch, start: Beat, duration: Beat) -> Self {
+    fn add_note<'p>(
+        &self,
+        py: Python<'p>,
+        pitch: &PyAny,
+        start: &PyAny,
+        duration: &PyAny,
+    ) -> PyResult<Self> {
+        let pitch = Pitch::from_py_any(py, pitch)?;
+        let start = Beat::from_py_any(py, start)?;
+        let duration = Beat::from_py_any(py, duration)?;
         let toid_note = note::Note {
             pitch: pitch.pitch,
             start: start.beat,
             duration: duration.beat,
         };
         let new_toid_phrase = self.phrase.add_note(toid_note);
-        Self {
+        Ok(Self {
             phrase: new_toid_phrase,
-        }
+        })
     }
 
-    fn set_length(&self, length: Beat) -> Self {
+    fn set_length<'p>(&self, py: Python<'p>, length: &PyAny) -> PyResult<Self> {
+        let length = Beat::from_py_any(py, length)?;
         let new_toid_phrase = self.phrase.set_length(length.beat);
-        Self {
+        Ok(Self {
             phrase: new_toid_phrase,
-        }
+        })
     }
 
     fn notes(&self) -> Vec<(f32, f32, f32)> {
@@ -121,8 +133,10 @@ impl Phrase {
         ret
     }
 
-    fn get_length(&self) -> f32 {
-        self.phrase.length.to_f32()
+    fn get_length(&self) -> Beat {
+        Beat {
+            beat: self.phrase.length,
+        }
     }
 
     fn pitchs(&self) -> PitchsProxy {
@@ -143,6 +157,15 @@ impl PyObjectProtocol for Phrase {
     fn __str__(&self) -> PyResult<String> {
         let s = serde_json::to_string(&self.phrase).unwrap();
         Ok(s)
+    }
+
+    fn __getattr__(&self, name: String) -> PyResult<PyObject> {
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        match name.as_str() {
+            "len" => Ok(Py::new(py, self.get_length())?.to_object(py)),
+            _ => Err(ValueError::py_err("invalid attr")),
+        }
     }
 }
 

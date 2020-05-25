@@ -42,12 +42,12 @@ impl Beat {
 #[pyproto]
 impl PyObjectProtocol for Beat {
     fn __repr__(&self) -> PyResult<String> {
-        let s = serde_json::to_string(&self.beat).unwrap();
+        let s = format!("{}", self.beat.to_f32());
         Ok(s)
     }
 
     fn __str__(&self) -> PyResult<String> {
-        let s = serde_json::to_string(&self.beat).unwrap();
+        let s = format!("{}", self.beat.to_f32());
         Ok(s)
     }
 }
