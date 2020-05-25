@@ -5,6 +5,7 @@ import time
 from toid import high_layer_trial  # NOQA
 
 from . import toid
+from . import mml as mml_mod
 
 WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
 PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
@@ -12,6 +13,8 @@ Phrase = toid.data.Phrase  # NOQA
 Track = toid.data.Track  # NOQA
 Pitch = toid.data.Pitch  # NOQA
 Beat = toid.data.Beat  # NOQA
+PitchInterval = toid.data.PitchInterval  # NOQA
+PitchInOctave = toid.data.PitchInOctave  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
@@ -62,14 +65,23 @@ class LocalPlayer(object):
         self.default_sample = "example_drums"
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)
+        self.parse_mode = "num"
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
+    
+    def change_parse_mode(self, mode):
+        self.parse_mode = mode
 
     def send_num_lang(self, melody_string, octave, key, name):
         self.player.send_num_lang(
             melody_string, float(octave), float(key), self.current_beat, name,
             self.default_sf2)
+
+    def send_mml(self, mml_string, name):
+        phrase = mml_mod.mml_to_phrase(mml_string)
+        self.player.send_phrase(
+            phrase, self.current_beat, name, self.default_sf2)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
@@ -118,7 +130,12 @@ class LocalPlayer(object):
                 else:
                     raise Exception("invalid value")
             elif isinstance(value, str):
-                self.send_num_lang(value, 0.0, 0.0, key)
+                if self.parse_mode == "num":
+                    self.send_num_lang(value, 0.0, 0.0, key)
+                elif self.parse_mode == "mml":
+                    self.send_mml(value, key)
+                else:
+                    raise Exception("invalid parse mode")
             else:
                 raise Exception("invalid value")
         else:
@@ -141,14 +158,23 @@ class WebSocketPlayer(object):
         self.default_sample = "example_drums"
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)
+        self.parse_mode = "num"
 
     def set_sf2_name(self, name):
         self.player.set_sf2_name(name)
+    
+    def change_parse_mode(self, mode):
+        self.parse_mode = mode
 
     def send_num_lang(self, melody_string, octave, key, name):
         self.player.send_num_lang(
             melody_string, float(octave), float(key), self.current_beat, name,
             self.default_sf2)
+
+    def send_mml(self, mml_string, name):
+        phrase = mml_mod.mml_to_phrase(mml_string)
+        self.player.send_phrase(
+            phrase, self.current_beat, name, self.default_sf2)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
@@ -200,7 +226,12 @@ class WebSocketPlayer(object):
                 else:
                     raise Exception("invalid value")
             elif isinstance(value, str):
-                self.send_num_lang(value, 0.0, 0.0, key)
+                if self.parse_mode == "num":
+                    self.send_num_lang(value, 0.0, 0.0, key)
+                elif self.parse_mode == "mml":
+                    self.send_mml(value, key)
+                else:
+                    raise Exception("invalid parse mode")
             else:
                 raise Exception("invalid value")
         else:
