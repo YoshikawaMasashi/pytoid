@@ -134,7 +134,13 @@ impl PyNumberProtocol for Condition {
 impl Condition {
     pub fn from_py_any<'p>(py: Python<'p>, condition: &PyAny) -> PyResult<Condition> {
         let condition: PyObject = condition.into();
-        condition.extract(py)
+        // condition.extract(py)
+        if let Ok(condition) = condition.extract(py) {
+            return Ok(condition);
+        }
+
+        let np_condition: Vec<bool> = condition.extract(py)?;
+        Ok(Condition{value: np_condition})
     }
 }
 
