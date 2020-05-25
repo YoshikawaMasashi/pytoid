@@ -14,7 +14,8 @@ def mml_to_phrase(mml_string):
     Returns:
         (Phrase)
     """
-    pitch_list, dur_list = parse_mml(mml_string)
+    res = parse_mml(mml_string)
+    pitch_list, dur_list = res["pitch"], res["duration"]
     ph = toid.Phrase()
     now = 0
     for pitch, dur in zip(pitch_list, dur_list):
