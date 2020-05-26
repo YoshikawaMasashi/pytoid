@@ -156,6 +156,14 @@ pub fn round_line<'p>(
     Ok(Phrase { phrase })
 }
 
+#[pyfunction]
+pub fn sixteen_shuffle(phrase: Phrase) -> Phrase {
+    let new_toid_phrase = phrase_operation::sixteen_shuffle(phrase.phrase);
+    Phrase {
+        phrase: new_toid_phrase,
+    }
+}
+
 #[pyclass]
 #[derive(Clone)]
 pub struct Condition {
@@ -353,6 +361,7 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(shuffle_start))?;
     m.add_wrapped(wrap_pyfunction!(split_by_condition))?;
     m.add_wrapped(wrap_pyfunction!(round_line))?;
+    m.add_wrapped(wrap_pyfunction!(sixteen_shuffle))?;
 
     m.add_class::<Condition>()?;
     m.add_wrapped(wrap_pyfunction!(and))?;

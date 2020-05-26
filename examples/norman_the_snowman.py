@@ -50,7 +50,8 @@ for key, pan in zip(['jr', 'jl'], [1.0, -1.0]):
     ph10 = hlt.delay(ph7, 1 / 2 + 1 / 8)
     ph11 = hlt.invert_pitch(ph10, 60 - 4 + 2 + 12 * 3)
     ph12 = ph9 * ph11
-    player[key] = player.make_track(ph12, pan=pan, vol=0.3)
+    ph13 = hlt.sixteen_shuffle(ph12)
+    player[key] = player.make_track(ph13, pan=pan, vol=0.3)
 
 sp = player.sample_player
 sp['kick'] = 'x x x x '
