@@ -115,6 +115,9 @@ class LocalPlayer(object):
     def prev_section(self):
         self.current_beat = self.player.get_prev_beat(self.current_beat)
 
+    def change_bpm(self, bpm):
+        self.player.change_bpm(bpm)
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
@@ -207,6 +210,9 @@ class WebSocketPlayer(object):
 
     def prev_section(self):
         self.current_beat = self.player.get_prev_beat(self.current_beat)
+
+    def change_bpm(self, bpm):
+        self.player.change_bpm(bpm)
 
     def sync_start(self):
         self.player.sync_start()
