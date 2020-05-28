@@ -5,12 +5,15 @@ import toid.high_layer_trial as hlt
 
 player = toid.local_play()
 
+player.print_preset_names()
+
 player.change_parse_mode("mml")
 player['mml'] = "o7l8 k8 cceeddcd efgccdec"
 player.change_parse_mode("num")
 
 ph1 = hlt.parse_num_lang('53' * 32, 3, -4)
 ph2 = hlt.parse_num_lang('97' * 16 + '86' * 16, 2, -4)
+player.preset_idx = 1
 player['a'] = ph1 * ph2
 player['b'] = '3121' * 8, 2, -4
 player['c'] = '1     5 3       ', 4, -4
@@ -27,6 +30,7 @@ player['i'] = ph5
 player.new_section(32)
 player.next_section()
 
+player.preset_idx = 0
 ph1 = hlt.parse_num_lang('53' * 32, 3, -4)
 ph2 = hlt.parse_num_lang('97' * 16 + '86' * 16, 2, -4)
 player['a'] = ph1 * ph2

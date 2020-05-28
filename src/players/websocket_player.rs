@@ -282,6 +282,15 @@ impl WebSocketPlayer {
             .unwrap();
         Ok(())
     }
+
+    fn print_preset_names(&self) -> PyResult<()> {
+        self.player
+            .get_resource_manager()
+            .get_sf2(String::from("example_sf2"))
+            .unwrap()
+            .print_preset_names();
+        Ok(())
+    }
 }
 
 #[pyclass]
