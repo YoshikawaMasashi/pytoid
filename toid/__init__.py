@@ -15,6 +15,7 @@ Pitch = toid.data.Pitch  # NOQA
 Beat = toid.data.Beat  # NOQA
 PitchInterval = toid.data.PitchInterval  # NOQA
 PitchInOctave = toid.data.PitchInOctave  # NOQA
+Instrument = toid.data.Instrument  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
@@ -63,25 +64,25 @@ class LocalPlayer(object):
         self.player.resource_register(example_drums_path)
         self.default_sf2 = "example_sf2"
         self.default_sample = "example_drums"
+        self.preset_idx = 0
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)
         self.parse_mode = "num"
 
-    def set_sf2_name(self, name):
-        self.player.set_sf2_name(name)
-    
     def change_parse_mode(self, mode):
         self.parse_mode = mode
 
     def send_num_lang(self, melody_string, octave, key, name):
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
         self.player.send_num_lang(
             melody_string, float(octave), float(key), self.current_beat, name,
-            self.default_sf2)
+            inst)
 
     def send_mml(self, mml_string, name):
         phrase = mml_mod.mml_to_phrase(mml_string)
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
         self.player.send_phrase(
-            phrase, self.current_beat, name, self.default_sf2)
+            phrase, self.current_beat, name, inst)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
@@ -89,9 +90,6 @@ class LocalPlayer(object):
 
     def resource_register(self, path):
         self.player.resource_register(path)
-
-    def load_sf2(self, name):
-        self.player.load_sf2(name)
 
     def get_toid_player(self):
         return self.player.get_toid_player()
@@ -101,7 +99,8 @@ class LocalPlayer(object):
     ):
         if sf2_name is None:
             sf2_name = self.default_sf2
-        return toid.data.Track(phrase, sf2_name, vol, pan)
+        inst = Instrument.sf2(sf2_name, self.preset_idx)
+        return toid.data.Track(phrase, inst, vol, pan)
 
     def new_section(self, beat):
         self.player.new_section(beat)
@@ -117,12 +116,16 @@ class LocalPlayer(object):
 
     def change_bpm(self, bpm):
         self.player.change_bpm(bpm)
+    
+    def print_preset_names(self):
+        self.player.print_preset_names()
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
+                inst = Instrument.sf2(self.default_sf2, self.preset_idx)
                 self.player.send_phrase(
-                    value, self.current_beat, key, self.default_sf2)
+                    value, self.current_beat, key, inst)
             elif isinstance(value, Track):
                 self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):
@@ -159,25 +162,25 @@ class WebSocketPlayer(object):
         self.player.resource_register(example_drums_path)
         self.default_sf2 = "example_sf2"
         self.default_sample = "example_drums"
+        self.preset_idx = 0
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)
         self.parse_mode = "num"
-
-    def set_sf2_name(self, name):
-        self.player.set_sf2_name(name)
     
     def change_parse_mode(self, mode):
         self.parse_mode = mode
 
     def send_num_lang(self, melody_string, octave, key, name):
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
         self.player.send_num_lang(
             melody_string, float(octave), float(key), self.current_beat, name,
-            self.default_sf2)
+            inst)
 
     def send_mml(self, mml_string, name):
         phrase = mml_mod.mml_to_phrase(mml_string)
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
         self.player.send_phrase(
-            phrase, self.current_beat, name, self.default_sf2)
+            phrase, self.current_beat, name, inst)
 
     def send_sample_lang(self, sample_string, name):
         self.player.send_sample_lang(
@@ -185,9 +188,6 @@ class WebSocketPlayer(object):
 
     def resource_register(self, path):
         self.player.resource_register(path)
-
-    def load_sf2(self, name):
-        self.player.load_sf2(name)
 
     def get_toid_player(self):
         return self.player.get_toid_player()
@@ -197,7 +197,8 @@ class WebSocketPlayer(object):
     ):
         if sf2_name is None:
             sf2_name = self.default_sf2
-        return toid.data.Track(phrase, sf2_name, vol, pan)
+        inst = Instrument.sf2(sf2_name, self.preset_idx)
+        return toid.data.Track(phrase, inst, vol, pan)
 
     def new_section(self, beat):
         self.player.new_section(beat)
@@ -216,12 +217,16 @@ class WebSocketPlayer(object):
 
     def sync_start(self):
         self.player.sync_start()
+    
+    def print_preset_names(self):
+        self.player.print_preset_names()
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
+                inst = Instrument.sf2(self.default_sf2, self.preset_idx)
                 self.player.send_phrase(
-                    value, self.current_beat, key, self.default_sf2)
+                    value, self.current_beat, key, inst)
             elif isinstance(value, Track):
                 self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):

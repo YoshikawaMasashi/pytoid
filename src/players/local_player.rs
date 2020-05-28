@@ -13,7 +13,7 @@ use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
 use toid::players::player::Player;
 
-use super::super::data::music_info::{Beat, Phrase, Track};
+use super::super::data::music_info::{Beat, Instrument, Phrase, Track};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -46,7 +46,7 @@ impl LocalPlayer {
         key: f32,
         beat: &PyAny,
         name: String,
-        sf2_name: String,
+        instrument: Instrument,
     ) -> PyResult<()> {
         let beat = Beat::from_py_any(py, beat)?;
         send_num_lang(
@@ -55,7 +55,7 @@ impl LocalPlayer {
             key,
             beat.beat,
             name,
-            Some(sf2_name),
+            instrument.instrument,
             1.0,
             0.0,
             Arc::clone(&self.player)
@@ -110,14 +110,14 @@ impl LocalPlayer {
         phrase: Phrase,
         beat: &PyAny,
         track_name: String,
-        sf2_name: Option<String>,
+        instrument: Instrument,
     ) -> PyResult<()> {
         let beat = Beat::from_py_any(py, beat)?;
         send_phrase::send_phrase(
             phrase.phrase,
             beat.beat,
             track_name,
-            sf2_name,
+            instrument.instrument,
             1.0,
             0.0,
             Arc::clone(&self.player)
@@ -270,6 +270,15 @@ impl LocalPlayer {
                 SchedulingStateEvent::ChangeBPM(toid_beat::Beat::from(0), bpm),
             ))
             .unwrap();
+        Ok(())
+    }
+
+    fn print_preset_names(&self) -> PyResult<()> {
+        self.player
+            .get_resource_manager()
+            .get_sf2(String::from("example_sf2"))
+            .unwrap()
+            .print_preset_names();
         Ok(())
     }
 }
