@@ -73,7 +73,7 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: MacOS :: MacOS X",
     ],
-    packages=["toid"],
+    packages=["toid", "toid.mml"],
     rust_extensions=[
         RustExtension("toid.toid", "Cargo.toml", debug=False),
     ],
