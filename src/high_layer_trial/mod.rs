@@ -1,7 +1,9 @@
+use numpy::PyArray1;
 use pyo3::class::PyNumberProtocol;
 use pyo3::prelude::{
     pyclass, pyfunction, pymodule, pyproto, PyAny, PyModule, PyObject, PyResult, Python,
 };
+use pyo3::types::{PyBool, PyIterator};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
 use toid::high_layer_trial::music_language;
@@ -198,8 +200,25 @@ impl Condition {
             return Ok(condition);
         }
 
-        let condition: Vec<bool> = condition.extract(py)?;
-        Ok(Condition { value: condition })
+        if let Ok(condition) = condition.extract(py) {
+            let mut cond_vec: Vec<bool> = vec![];
+            let np_condition: &PyArray1<bool> = condition;
+            for &value in np_condition.as_slice()? {
+                cond_vec.push(value);
+            }
+            return Ok(Condition::from(cond_vec));
+        }
+
+        let iter_condition: PyIterator = PyIterator::from_object(py, &condition)?;
+        let mut cond_vec: Vec<bool> = vec![];
+        for value in iter_condition {
+            let value: &PyAny = value?;
+            let value: PyObject = value.into();
+            let value: &PyBool = value.cast_as(py)?;
+            let value: bool = value.is_true();
+            cond_vec.push(value);
+        }
+        Ok(Condition::from(cond_vec))
     }
 }
 
