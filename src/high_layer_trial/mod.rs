@@ -1,7 +1,6 @@
 use numpy::PyArray1;
-use pyo3::class::PyNumberProtocol;
 use pyo3::prelude::{
-    pyclass, pyfunction, pymodule, pyproto, PyAny, PyModule, PyObject, PyResult, Python,
+    pyclass, pyfunction, pymodule, Py, PyAny, PyModule, PyObject, PyResult, Python,
 };
 use pyo3::types::{PyBool, PyIterator};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
@@ -89,17 +88,22 @@ pub fn shuffle_start(phrase: Phrase) -> Phrase {
 }
 
 #[pyfunction]
-pub fn split_by_condition(phrase: Phrase, condition: Condition) -> (Phrase, Phrase) {
+pub fn split_by_condition<'p>(
+    py: Python<'p>,
+    phrase: Phrase,
+    condition: &PyAny,
+) -> PyResult<(Phrase, Phrase)> {
+    let condition = Condition::from_py_any(py, condition)?;
     let (new_toid_phrase1, new_toid_phrase2) =
         phrase_operation::split_by_condition(phrase.phrase, condition.value);
-    (
+    Ok((
         Phrase {
             phrase: new_toid_phrase1,
         },
         Phrase {
             phrase: new_toid_phrase2,
         },
-    )
+    ))
 }
 
 #[pyfunction]
@@ -172,21 +176,6 @@ impl From<Vec<bool>> for Condition {
     }
 }
 
-#[pyproto]
-impl PyNumberProtocol for Condition {
-    fn __and__(lhs: Self, rhs: Self) -> PyResult<Self> {
-        Ok(and(lhs, rhs))
-    }
-
-    fn __or__(lhs: Self, rhs: Self) -> PyResult<Self> {
-        Ok(or(lhs, rhs))
-    }
-
-    fn __invert__(&self) -> PyResult<Self> {
-        Ok(not(self.clone()))
-    }
-}
-
 impl Condition {
     pub fn from_py_any<'p>(py: Python<'p>, condition: &PyAny) -> PyResult<Condition> {
         if let Ok(condition) = condition.extract() {
@@ -216,137 +205,111 @@ impl Condition {
 }
 
 #[pyfunction]
-fn and(condition1: Condition, condition2: Condition) -> Condition {
-    let new_toid_condition_value =
-        phrase_operation::condition::and(condition1.value, condition2.value);
-    Condition {
-        value: new_toid_condition_value,
-    }
-}
-
-#[pyfunction]
-fn or(condition1: Condition, condition2: Condition) -> Condition {
-    let new_toid_condition_value =
-        phrase_operation::condition::or(condition1.value, condition2.value);
-    Condition {
-        value: new_toid_condition_value,
-    }
-}
-
-#[pyfunction]
-fn not(condition: Condition) -> Condition {
-    let new_toid_condition_value = phrase_operation::condition::not(condition.value);
-    Condition {
-        value: new_toid_condition_value,
-    }
-}
-
-#[pyfunction]
-fn pitch_larger(phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+fn pitch_larger(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_larger(phrase.phrase, pitch.pitch);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn pitch_larger_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+fn pitch_larger_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_larger_equal(phrase.phrase, pitch.pitch);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn pitch_smaller(phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+fn pitch_smaller(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_smaller(phrase.phrase, pitch.pitch);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn pitch_smaller_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+fn pitch_smaller_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_smaller_equal(phrase.phrase, pitch.pitch);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn pitch_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Condition> {
+fn pitch_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
     let new_toid_condition_value =
         phrase_operation::condition::pitch_equal(phrase.phrase, pitch.pitch);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn start_larger(phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+fn start_larger(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_larger(phrase.phrase, beat.beat);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-pub fn start_larger_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+pub fn start_larger_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_larger_equal(phrase.phrase, beat.beat);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-pub fn start_smaller(phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+pub fn start_smaller(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_smaller(phrase.phrase, beat.beat);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn start_smaller_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+fn start_smaller_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_smaller_equal(phrase.phrase, beat.beat);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn start_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Condition> {
+fn start_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
     let new_toid_condition_value =
         phrase_operation::condition::start_equal(phrase.phrase, beat.beat);
-    Ok(Condition {
-        value: new_toid_condition_value,
-    })
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
-fn is_down_beat(phrase: Phrase) -> Condition {
+fn is_down_beat(phrase: Phrase) -> PyResult<Py<PyArray1<bool>>> {
     let new_toid_condition_value = phrase_operation::condition::is_down_beat(phrase.phrase);
-    Condition {
-        value: new_toid_condition_value,
-    }
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
 }
 
 #[pyfunction]
@@ -373,9 +336,6 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(sixteen_shuffle))?;
 
     m.add_class::<Condition>()?;
-    m.add_wrapped(wrap_pyfunction!(and))?;
-    m.add_wrapped(wrap_pyfunction!(or))?;
-    m.add_wrapped(wrap_pyfunction!(not))?;
     m.add_wrapped(wrap_pyfunction!(pitch_larger))?;
     m.add_wrapped(wrap_pyfunction!(pitch_larger_equal))?;
     m.add_wrapped(wrap_pyfunction!(pitch_smaller))?;

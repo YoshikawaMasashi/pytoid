@@ -12,7 +12,7 @@ use toid::data::music_info::pitch as toid_pitch;
 use toid::data::music_info::{note, phrase};
 use toid::high_layer_trial::phrase_operation;
 
-use super::super::super::high_layer_trial::{concat, marge, split_by_condition, Condition};
+use super::super::super::high_layer_trial::{concat, marge, split_by_condition};
 use super::{Beat, Pitch};
 
 #[pyclass]
@@ -194,8 +194,7 @@ impl PyMappingProtocol for Phrase {
         let gil = Python::acquire_gil();
         let py = gil.python();
 
-        if let Ok(cond) = Condition::from_py_any(py, item) {
-            let (new_phrase, _) = split_by_condition(self.clone(), cond);
+        if let Ok((new_phrase, _)) = split_by_condition(py, self.clone(), item) {
             return Ok(new_phrase);
         }
 
