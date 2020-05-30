@@ -3,6 +3,7 @@ use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
 use toid::data::music_info::track;
 
+use super::instrument::Instrument;
 use super::Phrase;
 
 #[pyclass]
@@ -20,10 +21,10 @@ impl Track {
 #[pymethods]
 impl Track {
     #[new]
-    pub fn new(phrase: Phrase, sf2_name: Option<String>, vol: f32, pan: f32) -> Self {
+    pub fn new(phrase: Phrase, instrument: Instrument, vol: f32, pan: f32) -> Self {
         let toid_track = track::Track {
             phrase: phrase.phrase,
-            sf2_name,
+            instrument: instrument.instrument,
             vol,
             pan,
         };
@@ -36,9 +37,9 @@ impl Track {
         }
     }
 
-    pub fn set_sf2_name(&self, sf2_name: Option<String>) -> Self {
+    pub fn set_instrument(&self, instrument: Instrument) -> Self {
         Self {
-            track: self.track.set_sf2_name(sf2_name),
+            track: self.track.set_inst(instrument.instrument),
         }
     }
 

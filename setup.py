@@ -63,7 +63,7 @@ tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.9a0",
+    version="0.0.10a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
@@ -73,7 +73,7 @@ setup(
         "Operating System :: POSIX",
         "Operating System :: MacOS :: MacOS X",
     ],
-    packages=["toid"],
+    packages=["toid", "toid.mml"],
     rust_extensions=[
         RustExtension("toid.toid", "Cargo.toml", debug=False),
     ],

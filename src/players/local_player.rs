@@ -1,16 +1,19 @@
 use pyo3::exceptions;
-use pyo3::prelude::{pyclass, pymethods, PyErr, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python};
 use std::sync::Arc;
 
+use toid::data::music_info::beat as toid_beat;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
 use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
 use toid::high_layer_trial::music_language::send_phrase;
-use toid::music_state::states::{MusicState, MusicStateEvent, SectionStateEvent};
+use toid::music_state::states::{
+    MusicState, MusicStateEvent, SchedulingStateEvent, SectionStateEvent,
+};
 use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
 use toid::players::player::Player;
 
-use super::super::data::music_info::{Beat, Phrase, Track};
+use super::super::data::music_info::{Beat, Instrument, Phrase, Track};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -35,22 +38,24 @@ impl LocalPlayer {
         }
     }
 
-    fn send_num_lang(
+    fn send_num_lang<'p>(
         &self,
+        py: Python<'p>,
         melody_string: String,
         octave: f32,
         key: f32,
-        beat: Beat,
+        beat: &PyAny,
         name: String,
-        sf2_name: String,
+        instrument: Instrument,
     ) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         send_num_lang(
             melody_string,
             octave,
             key,
             beat.beat,
             name,
-            Some(sf2_name),
+            instrument.instrument,
             1.0,
             0.0,
             Arc::clone(&self.player)
@@ -68,13 +73,15 @@ impl LocalPlayer {
         Ok(())
     }
 
-    fn send_sample_lang(
+    fn send_sample_lang<'p>(
         &self,
+        py: Python<'p>,
         phrase_string: String,
-        beat: Beat,
+        beat: &PyAny,
         name: String,
         sample_name: String,
     ) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         send_sample_lang(
             phrase_string,
             beat.beat,
@@ -97,18 +104,20 @@ impl LocalPlayer {
         Ok(())
     }
 
-    fn send_phrase(
+    fn send_phrase<'p>(
         &self,
+        py: Python<'p>,
         phrase: Phrase,
-        beat: Beat,
+        beat: &PyAny,
         track_name: String,
-        sf2_name: Option<String>,
+        instrument: Instrument,
     ) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         send_phrase::send_phrase(
             phrase.phrase,
             beat.beat,
             track_name,
-            sf2_name,
+            instrument.instrument,
             1.0,
             0.0,
             Arc::clone(&self.player)
@@ -126,7 +135,14 @@ impl LocalPlayer {
         Ok(())
     }
 
-    fn send_track(&self, track: Track, beat: Beat, name: String) -> PyResult<()> {
+    fn send_track<'p>(
+        &self,
+        py: Python<'p>,
+        track: Track,
+        beat: &PyAny,
+        name: String,
+    ) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         self.player
             .send_event(MusicStateEvent::SectionStateEvent(
                 beat.beat,
@@ -156,7 +172,8 @@ impl LocalPlayer {
         })
     }
 
-    fn get_track(&self, key: String, beat: Beat) -> PyResult<Track> {
+    fn get_track<'p>(&self, py: Python<'p>, key: String, beat: &PyAny) -> PyResult<Track> {
+        let beat = Beat::from_py_any(py, beat)?;
         match self
             .player
             .get_store()
@@ -170,7 +187,8 @@ impl LocalPlayer {
         }
     }
 
-    fn get_track_names(&self, beat: Beat) -> PyResult<Vec<String>> {
+    fn get_track_names<'p>(&self, py: Python<'p>, beat: &PyAny) -> PyResult<Vec<String>> {
+        let beat = Beat::from_py_any(py, beat)?;
         Ok(self
             .player
             .get_store()
@@ -195,7 +213,8 @@ impl LocalPlayer {
         Ok(ret)
     }
 
-    fn get_next_beat(&self, current_beat: Beat) -> PyResult<Beat> {
+    fn get_next_beat<'p>(&self, py: Python<'p>, current_beat: &PyAny) -> PyResult<Beat> {
+        let current_beat = Beat::from_py_any(py, current_beat)?;
         let mut next_beats: Vec<Beat> = vec![];
         for beat in self.get_section_beats().unwrap().iter() {
             if current_beat.beat < beat.beat {
@@ -215,7 +234,8 @@ impl LocalPlayer {
         }
     }
 
-    fn get_prev_beat(&self, current_beat: Beat) -> PyResult<Beat> {
+    fn get_prev_beat<'p>(&self, py: Python<'p>, current_beat: &PyAny) -> PyResult<Beat> {
+        let current_beat = Beat::from_py_any(py, current_beat)?;
         let mut prev_beats: Vec<Beat> = vec![];
         for beat in self.get_section_beats().unwrap().iter() {
             if beat.beat < current_beat.beat {
@@ -236,10 +256,29 @@ impl LocalPlayer {
         }
     }
 
-    fn new_section(&self, beat: Beat) -> PyResult<()> {
+    fn new_section<'p>(&self, py: Python<'p>, beat: &PyAny) -> PyResult<()> {
+        let beat = Beat::from_py_any(py, beat)?;
         self.player
             .send_event(MusicStateEvent::NewSection(beat.beat))
             .unwrap();
+        Ok(())
+    }
+
+    fn change_bpm(&self, bpm: f32) -> PyResult<()> {
+        self.player
+            .send_event(MusicStateEvent::SchedulingStateEvent(
+                SchedulingStateEvent::ChangeBPM(toid_beat::Beat::from(0), bpm),
+            ))
+            .unwrap();
+        Ok(())
+    }
+
+    fn print_preset_names(&self) -> PyResult<()> {
+        self.player
+            .get_resource_manager()
+            .get_sf2(String::from("example_sf2"))
+            .unwrap()
+            .print_preset_names();
         Ok(())
     }
 }
