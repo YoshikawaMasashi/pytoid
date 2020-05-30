@@ -1,5 +1,5 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::pitch_in_octave;
 
@@ -35,12 +35,11 @@ impl From<f32> for PitchInOctave {
 }
 
 impl PitchInOctave {
-    pub fn from_py_any<'p>(py: Python<'p>, pitch: &PyAny) -> PyResult<PitchInOctave> {
-        let pitch: PyObject = pitch.into();
-        match pitch.extract(py) {
+    pub fn from_py_any(pitch: &PyAny) -> PyResult<PitchInOctave> {
+        match pitch.extract() {
             Ok(pitch) => Ok(pitch),
             Err(_e) => {
-                let pitch: f32 = pitch.extract(py)?;
+                let pitch: f32 = pitch.extract()?;
                 Ok(PitchInOctave::from(pitch))
             }
         }

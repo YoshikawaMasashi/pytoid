@@ -1,5 +1,5 @@
 use pyo3::exceptions;
-use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult, Python};
+use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult};
 use std::sync::Arc;
 use std::thread;
 
@@ -41,9 +41,8 @@ impl WebSocketPlayer {
         }
     }
 
-    fn send_num_lang<'p>(
+    fn send_num_lang(
         &self,
-        py: Python<'p>,
         melody_string: String,
         octave: f32,
         key: f32,
@@ -51,7 +50,7 @@ impl WebSocketPlayer {
         name: String,
         instrument: Instrument,
     ) -> PyResult<()> {
-        let beat = Beat::from_py_any(py, beat)?;
+        let beat = Beat::from_py_any(beat)?;
         send_num_lang(
             melody_string,
             octave,
@@ -76,15 +75,14 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn send_sample_lang<'p>(
+    fn send_sample_lang(
         &self,
-        py: Python<'p>,
         phrase_string: String,
         beat: &PyAny,
         name: String,
         sample_name: String,
     ) -> PyResult<()> {
-        let beat = Beat::from_py_any(py, beat)?;
+        let beat = Beat::from_py_any(beat)?;
         send_sample_lang(
             phrase_string,
             beat.beat,
@@ -107,15 +105,14 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn send_phrase<'p>(
+    fn send_phrase(
         &self,
-        py: Python<'p>,
         phrase: Phrase,
         beat: &PyAny,
         track_name: String,
         instrument: Instrument,
     ) -> PyResult<()> {
-        let beat = Beat::from_py_any(py, beat)?;
+        let beat = Beat::from_py_any(beat)?;
         send_phrase::send_phrase(
             phrase.phrase,
             beat.beat,
@@ -138,14 +135,8 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn send_track<'p>(
-        &self,
-        py: Python<'p>,
-        track: Track,
-        beat: &PyAny,
-        name: String,
-    ) -> PyResult<()> {
-        let beat = Beat::from_py_any(py, beat)?;
+    fn send_track(&self, track: Track, beat: &PyAny, name: String) -> PyResult<()> {
+        let beat = Beat::from_py_any(beat)?;
         self.player
             .send_event(MusicStateEvent::SectionStateEvent(
                 beat.beat,
@@ -182,8 +173,8 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn get_track<'p>(&self, py: Python<'p>, key: String, beat: &PyAny) -> PyResult<Track> {
-        let beat = Beat::from_py_any(py, beat)?;
+    fn get_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
+        let beat = Beat::from_py_any(beat)?;
         match self
             .player
             .get_store()
@@ -197,8 +188,8 @@ impl WebSocketPlayer {
         }
     }
 
-    fn get_track_names<'p>(&self, py: Python<'p>, beat: &PyAny) -> PyResult<Vec<String>> {
-        let beat = Beat::from_py_any(py, beat)?;
+    fn get_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
+        let beat = Beat::from_py_any(beat)?;
         Ok(self
             .player
             .get_store()
@@ -223,8 +214,8 @@ impl WebSocketPlayer {
         Ok(ret)
     }
 
-    fn get_next_beat<'p>(&self, py: Python<'p>, current_beat: &PyAny) -> PyResult<Beat> {
-        let current_beat = Beat::from_py_any(py, current_beat)?;
+    fn get_next_beat(&self, current_beat: &PyAny) -> PyResult<Beat> {
+        let current_beat = Beat::from_py_any(current_beat)?;
         let mut next_beats: Vec<Beat> = vec![];
         for beat in self.get_section_beats().unwrap().iter() {
             if current_beat.beat < beat.beat {
@@ -244,8 +235,8 @@ impl WebSocketPlayer {
         }
     }
 
-    fn get_prev_beat<'p>(&self, py: Python<'p>, current_beat: &PyAny) -> PyResult<Beat> {
-        let current_beat = Beat::from_py_any(py, current_beat)?;
+    fn get_prev_beat(&self, current_beat: &PyAny) -> PyResult<Beat> {
+        let current_beat = Beat::from_py_any(current_beat)?;
         let mut prev_beats: Vec<Beat> = vec![];
         for beat in self.get_section_beats().unwrap().iter() {
             if beat.beat < current_beat.beat {
@@ -266,8 +257,8 @@ impl WebSocketPlayer {
         }
     }
 
-    fn new_section<'p>(&self, py: Python<'p>, beat: &PyAny) -> PyResult<()> {
-        let beat = Beat::from_py_any(py, beat)?;
+    fn new_section(&self, beat: &PyAny) -> PyResult<()> {
+        let beat = Beat::from_py_any(beat)?;
         self.player
             .send_event(MusicStateEvent::NewSection(beat.beat))
             .unwrap();
