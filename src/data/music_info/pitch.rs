@@ -1,5 +1,5 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::pitch as toid_pitch;
 
@@ -35,12 +35,11 @@ impl From<f32> for Pitch {
 }
 
 impl Pitch {
-    pub fn from_py_any<'p>(py: Python<'p>, pitch: &PyAny) -> PyResult<Pitch> {
-        let pitch: PyObject = pitch.into();
-        match pitch.extract(py) {
+    pub fn from_py_any(pitch: &PyAny) -> PyResult<Pitch> {
+        match pitch.extract() {
             Ok(pitch) => Ok(pitch),
             Err(_e) => {
-                let pitch: f32 = pitch.extract(py)?;
+                let pitch: f32 = pitch.extract()?;
                 Ok(Pitch::from(pitch))
             }
         }

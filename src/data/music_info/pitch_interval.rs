@@ -1,5 +1,5 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::pitch_interval;
 
@@ -35,12 +35,11 @@ impl From<f32> for PitchInterval {
 }
 
 impl PitchInterval {
-    pub fn from_py_any<'p>(py: Python<'p>, interval: &PyAny) -> PyResult<PitchInterval> {
-        let interval: PyObject = interval.into();
-        match interval.extract(py) {
+    pub fn from_py_any(interval: &PyAny) -> PyResult<PitchInterval> {
+        match interval.extract() {
             Ok(interval) => Ok(interval),
             Err(_e) => {
-                let interval: f32 = interval.extract(py)?;
+                let interval: f32 = interval.extract()?;
                 Ok(PitchInterval::from(interval))
             }
         }

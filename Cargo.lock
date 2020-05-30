@@ -926,6 +926,7 @@ dependencies = [
 name = "pytoid"
 version = "0.0.10-alpha"
 dependencies = [
+ "itertools",
  "numpy",
  "pyo3",
  "serde_json",

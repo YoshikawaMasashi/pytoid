@@ -1,5 +1,5 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::beat as toid_beat;
 
@@ -27,12 +27,11 @@ impl From<f32> for Beat {
 }
 
 impl Beat {
-    pub fn from_py_any<'p>(py: Python<'p>, beat: &PyAny) -> PyResult<Beat> {
-        let beat: PyObject = beat.into();
-        match beat.extract(py) {
+    pub fn from_py_any(beat: &PyAny) -> PyResult<Beat> {
+        match beat.extract() {
             Ok(beat) => Ok(beat),
             Err(_e) => {
-                let beat: f32 = beat.extract(py)?;
+                let beat: f32 = beat.extract()?;
                 Ok(Beat::from(beat))
             }
         }
