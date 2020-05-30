@@ -55,10 +55,12 @@ impl Phrase {
         starts: &PyAny,
         durations: &PyAny,
         pitchs: &PyAny,
+        length: &PyAny,
     ) -> PyResult<Self> {
         let starts = to_pyarray_f32(starts)?;
         let durations = to_pyarray_f32(durations)?;
         let pitchs = to_pyarray_f32(pitchs)?;
+        let length = Beat::from_py_any(length)?;
 
         let mut new_toid_phrase = phrase::Phrase::new();
         for (&start, &duration, &pitch) in izip!(
@@ -73,6 +75,7 @@ impl Phrase {
             };
             new_toid_phrase = new_toid_phrase.add_note(toid_note);
         }
+        new_toid_phrase = new_toid_phrase.set_length(length.beat);
         Ok(Self {
             phrase: new_toid_phrase,
         })
