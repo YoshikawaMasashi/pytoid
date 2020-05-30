@@ -313,10 +313,12 @@ fn is_down_beat(phrase: Phrase) -> PyResult<Py<PyArray1<bool>>> {
 }
 
 #[pyfunction]
-fn parlin_noise(size: usize, degree: f32, max: f32, min: f32) -> Vec<f32> {
+fn parlin_noise(size: usize, degree: f32, max: f32, min: f32) -> Py<PyArray1<f32>> {
     let noise = toid_num::parlin_noise_seq(size, degree, None);
     let noise = toid_num::change_max_min(&noise, max, min);
-    noise
+    let gil = Python::acquire_gil();
+    let py = gil.python();
+    PyArray1::<f32>::from_vec(py, noise).to_owned()
 }
 
 #[pymodule]
