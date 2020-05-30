@@ -1,4 +1,4 @@
-use pyo3::class::basic::CompareOp;
+use numpy::PyArray1;
 use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
 use pyo3::conversion::ToPyObject;
 use pyo3::exceptions::ValueError;
@@ -11,72 +11,6 @@ use toid::high_layer_trial::phrase_operation;
 
 use super::super::super::high_layer_trial::{concat, marge, split_by_condition, Condition};
 use super::{Beat, Pitch};
-
-#[pyclass]
-#[derive(Clone)]
-pub struct PitchsProxy {
-    pub phrase: phrase::Phrase,
-}
-
-#[pyproto]
-impl PyObjectProtocol for PitchsProxy {
-    fn __richcmp__(&self, other: Pitch, op: CompareOp) -> PyResult<Condition> {
-        let value = match op {
-            CompareOp::Eq => {
-                phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch)
-            }
-            CompareOp::Ne => phrase_operation::condition::not(
-                phrase_operation::condition::pitch_equal(self.phrase.clone(), other.pitch),
-            ),
-            CompareOp::Ge => {
-                phrase_operation::condition::pitch_larger_equal(self.phrase.clone(), other.pitch)
-            }
-            CompareOp::Gt => {
-                phrase_operation::condition::pitch_larger(self.phrase.clone(), other.pitch)
-            }
-            CompareOp::Le => {
-                phrase_operation::condition::pitch_smaller_equal(self.phrase.clone(), other.pitch)
-            }
-            CompareOp::Lt => {
-                phrase_operation::condition::pitch_smaller(self.phrase.clone(), other.pitch)
-            }
-        };
-        Ok(Condition::from(value))
-    }
-}
-
-#[pyclass]
-#[derive(Clone)]
-pub struct StartsProxy {
-    pub phrase: phrase::Phrase,
-}
-
-#[pyproto]
-impl PyObjectProtocol for StartsProxy {
-    fn __richcmp__(&self, other: Beat, op: CompareOp) -> PyResult<Condition> {
-        let value = match op {
-            CompareOp::Eq => {
-                phrase_operation::condition::start_equal(self.phrase.clone(), other.beat)
-            }
-            CompareOp::Ne => phrase_operation::condition::not(
-                phrase_operation::condition::start_equal(self.phrase.clone(), other.beat),
-            ),
-            CompareOp::Ge => {
-                phrase_operation::condition::start_larger_equal(self.phrase.clone(), other.beat)
-            }
-            CompareOp::Gt => {
-                phrase_operation::condition::start_larger(self.phrase.clone(), other.beat)
-            }
-            CompareOp::Le => {
-                phrase_operation::condition::start_smaller_equal(self.phrase.clone(), other.beat)
-            }
-            CompareOp::Lt => {
-                phrase_operation::condition::start_smaller(self.phrase.clone(), other.beat)
-            }
-        };
-        Ok(Condition::from(value))
-    }
-}
 
 #[pyclass]
 #[derive(Clone)]
@@ -141,16 +75,26 @@ impl Phrase {
         }
     }
 
-    fn pitchs(&self) -> PitchsProxy {
-        PitchsProxy {
-            phrase: self.phrase.clone(),
+    fn get_pitchs(&self) -> Py<PyArray1<f32>> {
+        let toid_notes_vec = self.phrase.note_vec();
+        let mut pitchs_vec: Vec<f32> = vec![];
+        for toid_note in toid_notes_vec.iter() {
+            pitchs_vec.push(toid_note.pitch.to_f32());
         }
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        PyArray1::<f32>::from_vec(py, pitchs_vec).to_owned()
     }
 
-    fn starts(&self) -> StartsProxy {
-        StartsProxy {
-            phrase: self.phrase.clone(),
+    fn get_starts(&self) -> Py<PyArray1<f32>> {
+        let toid_notes_vec = self.phrase.note_vec();
+        let mut starts_vec: Vec<f32> = vec![];
+        for toid_note in toid_notes_vec.iter() {
+            starts_vec.push(toid_note.start.to_f32());
         }
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        PyArray1::<f32>::from_vec(py, starts_vec).to_owned()
     }
 }
 
@@ -166,6 +110,8 @@ impl PyObjectProtocol for Phrase {
         let py = gil.python();
         match name.as_str() {
             "len" => Ok(Py::new(py, self.get_length())?.to_object(py)),
+            "starts" => Ok(self.get_starts().to_object(py)),
+            "pitchs" => Ok(self.get_pitchs().to_object(py)),
             _ => Err(ValueError::py_err("invalid attr")),
         }
     }
