@@ -180,13 +180,14 @@ impl LocalPlayer {
 
     fn get_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
         let beat = Beat::from_py_any(beat)?;
-        Ok(self
+        let track_names = self
             .player
             .get_store()
             .get_state()
             .unwrap()
             .get_section_state_by_beat(beat.beat)
-            .get_track_names())
+            .get_track_names();
+        Ok(track_names)
     }
 
     fn get_section_beats(&self) -> PyResult<Vec<Beat>> {

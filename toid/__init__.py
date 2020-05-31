@@ -115,6 +115,9 @@ class Player(object):
     def clear_sections(self):
         self.player.clear_sections()
 
+    def get_track_names(self):
+        return self.player.get_track_names(self.current_beat)
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
