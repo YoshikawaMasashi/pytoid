@@ -282,6 +282,18 @@ impl WebSocketPlayer {
             .print_preset_names();
         Ok(())
     }
+
+    fn clear_states(&self) -> PyResult<()> {
+        self.player.send_event(MusicStateEvent::Clear).unwrap();
+        Ok(())
+    }
+
+    fn clear_sections(&self) -> PyResult<()> {
+        self.player
+            .send_event(MusicStateEvent::ClearSections)
+            .unwrap();
+        Ok(())
+    }
 }
 
 #[pyclass]
