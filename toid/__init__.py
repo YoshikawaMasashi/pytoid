@@ -118,6 +118,12 @@ class Player(object):
     def get_track_names(self):
         return self.player.get_track_names(self.current_beat)
 
+    def save_state(self, path):
+        self.player.save_state(path)
+
+    def load_state(self, path):
+        self.player.load_state(path)
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):

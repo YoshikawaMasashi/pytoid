@@ -285,4 +285,14 @@ impl LocalPlayer {
             .unwrap();
         Ok(())
     }
+
+    fn save_state(&self, path: String) -> PyResult<()> {
+        self.player.save_state(path).or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
+        Ok(())
+    }
+
+    fn load_state(&self, path: String) -> PyResult<()> {
+        self.player.load_state(path).or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
+        Ok(())
+    }
 }
