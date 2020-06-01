@@ -186,3 +186,6 @@ class WebSocketPlayer(object):
 
     def sync_start(self):
         self.player.sync_start()
+
+    def sync_state(self):
+        self.player.sync_state()

@@ -173,6 +173,11 @@ impl WebSocketPlayer {
         Ok(())
     }
 
+    fn sync_state(&self) -> PyResult<()> {
+        self.player.sync_state().unwrap();
+        Ok(())
+    }
+
     fn get_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
         let beat = Beat::from_py_any(beat)?;
         match self
@@ -297,12 +302,16 @@ impl WebSocketPlayer {
     }
 
     fn save_state(&self, path: String) -> PyResult<()> {
-        self.player.save_state(path).or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
+        self.player
+            .save_state(path)
+            .or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
         Ok(())
     }
 
     fn load_state(&self, path: String) -> PyResult<()> {
-        self.player.load_state(path).or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
+        self.player
+            .load_state(path)
+            .or_else(|e| Err(PyErr::new::<exceptions::RuntimeError, _>(e)))?;
         Ok(())
     }
 }
