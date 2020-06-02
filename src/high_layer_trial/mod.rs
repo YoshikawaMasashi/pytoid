@@ -1,3 +1,4 @@
+use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::prelude::{
     pyclass, pyfunction, pymodule, Py, PyAny, PyModule, PyObject, PyResult, Python,
@@ -5,6 +6,9 @@ use pyo3::prelude::{
 use pyo3::types::{PyBool, PyIterator};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
+use toid::data::music_info::beat as toid_beat;
+use toid::data::music_info::pitch as toid_pitch;
+use toid::data::music_info::pitch_in_octave as toid_pitch_in_octave;
 use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
@@ -106,53 +110,110 @@ pub fn split_by_condition<'p>(
     ))
 }
 
+fn pyany_to_vec_pyany(pyany: &PyAny) -> PyResult<Vec<&PyAny>> {
+    pyany.extract()
+}
+
+fn pyany_to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
+    if let Ok(array) = array.extract() {
+        let array: &PyArray1<i32> = array;
+        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+    }
+
+    if let Ok(array) = array.extract() {
+        let array: &PyArray1<i64> = array;
+        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+    }
+
+    if let Ok(array) = array.extract() {
+        let array: &PyArray1<f64> = array;
+        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+    }
+
+    array.extract()
+}
+
+fn pyany_to_beat_vec(pyany: &PyAny) -> PyResult<Vec<Beat>> {
+    if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
+        let mut beat_vec = vec![];
+        for &b in pyany.as_slice()? {
+            beat_vec.push(Beat {
+                beat: toid_beat::Beat::from(b),
+            });
+        }
+        Ok(beat_vec)
+    } else {
+        let pyany = pyany_to_vec_pyany(pyany)?;
+        let mut beat_vec = vec![];
+        for b in pyany.iter() {
+            let b = Beat::from_py_any(b)?;
+            beat_vec.push(b);
+        }
+        Ok(beat_vec)
+    }
+}
+
+fn pyany_to_pitch_vec(pyany: &PyAny) -> PyResult<Vec<Pitch>> {
+    if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
+        let mut pitch_vec = vec![];
+        for &p in pyany.as_slice()? {
+            pitch_vec.push(Pitch {
+                pitch: toid_pitch::Pitch::from(p),
+            });
+        }
+        Ok(pitch_vec)
+    } else {
+        let pyany = pyany_to_vec_pyany(pyany)?;
+        let mut pitch_vec = vec![];
+        for p in pyany.iter() {
+            let p = Pitch::from_py_any(p)?;
+            pitch_vec.push(p);
+        }
+        Ok(pitch_vec)
+    }
+}
+
+fn pyany_to_pitch_in_octave_vec(pyany: &PyAny) -> PyResult<Vec<PitchInOctave>> {
+    if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
+        let mut pitch_vec = vec![];
+        for &p in pyany.as_slice()? {
+            pitch_vec.push(PitchInOctave {
+                pitch: toid_pitch_in_octave::PitchInOctave::from(p),
+            });
+        }
+        Ok(pitch_vec)
+    } else {
+        let pyany = pyany_to_vec_pyany(pyany)?;
+        let mut pitch_vec = vec![];
+        for p in pyany.iter() {
+            let p = PitchInOctave::from_py_any(p)?;
+            pitch_vec.push(p);
+        }
+        Ok(pitch_vec)
+    }
+}
+
 #[pyfunction]
 pub fn round_line(
-    line: (Vec<&PyAny>, Vec<&PyAny>),
-    start: Vec<&PyAny>,
-    duration: Vec<&PyAny>,
-    scale: Vec<&PyAny>,
+    line_beat: &PyAny,
+    line_pitch: &PyAny,
+    start: &PyAny,
+    duration: &PyAny,
+    scale: &PyAny,
 ) -> PyResult<Phrase> {
-    let mut line_beat = vec![];
-    let mut line_pitch = vec![];
-    for (lb, lp) in line.0.iter().zip(line.1.iter()) {
-        let lb = Beat::from_py_any(lb)?;
-        let lp = Pitch::from_py_any(lp)?;
-        line_beat.push(lb);
-        line_pitch.push(lp);
-    }
-    let line = (line_beat, line_pitch);
+    let line_beat = pyany_to_beat_vec(line_beat)?;
+    let line_pitch = pyany_to_pitch_vec(line_pitch)?;
+    let start = pyany_to_beat_vec(start)?;
+    let duration = pyany_to_beat_vec(duration)?;
+    let scale = pyany_to_pitch_in_octave_vec(scale)?;
 
-    let mut start_ = vec![];
-    for s in start.iter() {
-        let s = Beat::from_py_any(s)?;
-        start_.push(s);
-    }
-    let start = start_;
-
-    let mut duration_ = vec![];
-    for d in duration.iter() {
-        let d = Beat::from_py_any(d)?;
-        duration_.push(d);
-    }
-    let duration = duration_;
-
-    let mut scale_ = vec![];
-    for s in scale.iter() {
-        let s = PitchInOctave::from_py_any(s)?;
-        scale_.push(s);
-    }
-    let scale = scale_;
-
-    let line = (
-        line.0.iter().map(|beat| beat.beat).collect(),
-        line.1.iter().map(|pitch| pitch.pitch).collect(),
-    );
+    let line_beat = line_beat.iter().map(|beat| beat.beat).collect();
+    let line_pitch = line_pitch.iter().map(|pitch| pitch.pitch).collect();
     let start = start.iter().map(|beat| beat.beat).collect();
     let duration = duration.iter().map(|duration| duration.beat).collect();
     let scale = scale.iter().map(|pitch| pitch.pitch).collect();
 
-    let phrase = phrase_operation::round_line(line, start, duration, scale);
+    let phrase = phrase_operation::round_line(line_beat, line_pitch, start, duration, scale);
     Ok(Phrase { phrase })
 }
 
