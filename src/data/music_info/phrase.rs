@@ -179,11 +179,39 @@ impl PyObjectProtocol for Phrase {
 
 #[pyproto]
 impl PyNumberProtocol for Phrase {
-    fn __mul__(lhs: Self, rhs: Self) -> PyResult<Self> {
+    fn __mul__(lhs: &PyAny, rhs: &PyAny) -> PyResult<Self> {
+        if let Ok(lhs) = lhs.clone().extract() {
+            let _lhs: f32 = lhs;
+            let rhs: Phrase = rhs.extract()?;
+            return Ok(rhs);
+        }
+
+        if let Ok(rhs) = lhs.clone().extract() {
+            let _rhs: f32 = rhs;
+            let lhs: Phrase = lhs.extract()?;
+            return Ok(lhs);
+        }
+
+        let lhs: Phrase = lhs.extract()?;
+        let rhs: Phrase = rhs.extract()?;
         Ok(marge(lhs, rhs))
     }
 
-    fn __add__(lhs: Self, rhs: Self) -> PyResult<Self> {
+    fn __add__(lhs: &PyAny, rhs: &PyAny) -> PyResult<Self> {
+        if let Ok(lhs) = lhs.clone().extract() {
+            let _lhs: f32 = lhs;
+            let rhs: Phrase = rhs.extract()?;
+            return Ok(rhs);
+        }
+
+        if let Ok(rhs) = lhs.clone().extract() {
+            let _rhs: f32 = rhs;
+            let lhs: Phrase = lhs.extract()?;
+            return Ok(lhs);
+        }
+
+        let lhs: Phrase = lhs.extract()?;
+        let rhs: Phrase = rhs.extract()?;
         Ok(concat(lhs, rhs))
     }
 }

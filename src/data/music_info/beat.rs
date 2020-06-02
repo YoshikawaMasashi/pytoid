@@ -1,4 +1,4 @@
-use pyo3::class::PyObjectProtocol;
+use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::beat as toid_beat;
@@ -48,5 +48,17 @@ impl PyObjectProtocol for Beat {
     fn __str__(&self) -> PyResult<String> {
         let s = format!("{}", self.beat.to_f32());
         Ok(s)
+    }
+}
+
+#[pyproto]
+impl PyNumberProtocol for Beat {
+    fn __add__(lhs: &PyAny, rhs: &PyAny) -> PyResult<Self> {
+        let lhs = Beat::from_py_any(lhs)?;
+        let rhs = Beat::from_py_any(rhs)?;
+
+        Ok(Beat {
+            beat: lhs.beat + rhs.beat,
+        })
     }
 }
