@@ -7,9 +7,7 @@ use pyo3::exceptions::ValueError;
 use pyo3::prelude::{pyclass, pymethods, pyproto, Py, PyAny, PyObject, PyResult, Python};
 use pyo3::types::{PySlice, PyType};
 
-use toid::data::music_info::beat as toid_beat;
-use toid::data::music_info::pitch as toid_pitch;
-use toid::data::music_info::{note, phrase};
+use toid::data::music_info as toid_music_info;
 use toid::high_layer_trial::phrase_operation;
 
 use super::super::super::high_layer_trial::{concat, marge, split_by_condition};
@@ -18,7 +16,7 @@ use super::{Beat, Pitch};
 #[pyclass]
 #[derive(Clone)]
 pub struct Phrase {
-    pub phrase: phrase::Phrase,
+    pub phrase: toid_music_info::Phrase,
 }
 
 fn to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
@@ -45,7 +43,7 @@ impl Phrase {
     #[new]
     pub fn new() -> Self {
         Self {
-            phrase: phrase::Phrase::new(),
+            phrase: toid_music_info::Phrase::new(),
         }
     }
 
@@ -62,16 +60,16 @@ impl Phrase {
         let pitchs = to_pyarray_f32(pitchs)?;
         let length = Beat::from_py_any(length)?;
 
-        let mut new_toid_phrase = phrase::Phrase::new();
+        let mut new_toid_phrase = toid_music_info::Phrase::new();
         for (&start, &duration, &pitch) in izip!(
             starts.as_slice()?,
             durations.as_slice()?,
             pitchs.as_slice()?
         ) {
-            let toid_note = note::Note {
-                pitch: toid_pitch::Pitch::from(pitch),
-                start: toid_beat::Beat::from(start),
-                duration: toid_beat::Beat::from(duration),
+            let toid_note = toid_music_info::Note {
+                pitch: toid_music_info::Pitch::from(pitch),
+                start: toid_music_info::Beat::from(start),
+                duration: toid_music_info::Beat::from(duration),
             };
             new_toid_phrase = new_toid_phrase.add_note(toid_note);
         }
@@ -85,7 +83,7 @@ impl Phrase {
         let pitch = Pitch::from_py_any(pitch)?;
         let start = Beat::from_py_any(start)?;
         let duration = Beat::from_py_any(duration)?;
-        let toid_note = note::Note {
+        let toid_note = toid_music_info::Note {
             pitch: pitch.pitch,
             start: start.beat,
             duration: duration.beat,
@@ -248,7 +246,7 @@ impl PyMappingProtocol for Phrase {
                     start.beat,
                 );
                 let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
-                let phrase = phrase_operation::delay(phrase, toid_beat::Beat::from(0) - start.beat);
+                let phrase = phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
                 Ok(Self { phrase })
             }
             (false, false) => {
@@ -262,7 +260,7 @@ impl PyMappingProtocol for Phrase {
                     phrase_operation::condition::start_smaller(self.phrase.clone(), stop.beat),
                 );
                 let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
-                let phrase = phrase_operation::delay(phrase, toid_beat::Beat::from(0) - start.beat);
+                let phrase = phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
                 let phrase = phrase.set_length(stop.beat - start.beat);
                 Ok(Self { phrase })
             }

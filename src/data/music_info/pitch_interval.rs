@@ -1,19 +1,19 @@
 use pyo3::class::PyObjectProtocol;
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
-use toid::data::music_info::pitch_interval;
+use toid::data::music_info as toid_music_info;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct PitchInterval {
-    pub interval: pitch_interval::PitchInterval,
+    pub interval: toid_music_info::PitchInterval,
 }
 
 #[pymethods]
 impl PitchInterval {
     #[new]
     fn new(interval: f32) -> Self {
-        let interval = pitch_interval::PitchInterval::from(interval);
+        let interval = toid_music_info::PitchInterval::from(interval);
         Self { interval }
     }
 }
@@ -29,7 +29,7 @@ impl PyObjectProtocol for PitchInterval {
 impl From<f32> for PitchInterval {
     fn from(interval: f32) -> Self {
         PitchInterval {
-            interval: pitch_interval::PitchInterval::from(interval),
+            interval: toid_music_info::PitchInterval::from(interval),
         }
     }
 }

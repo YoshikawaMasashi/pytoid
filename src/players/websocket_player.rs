@@ -3,7 +3,7 @@ use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult};
 use std::sync::Arc;
 use std::thread;
 
-use toid::data::music_info::beat as toid_beat;
+use toid::data::music_info as toid_music_info;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
 use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
 use toid::high_layer_trial::music_language::send_phrase;
@@ -274,7 +274,7 @@ impl WebSocketPlayer {
     fn change_bpm(&self, bpm: f32) -> PyResult<()> {
         self.player
             .send_event(MusicStateEvent::SchedulingStateEvent(
-                SchedulingStateEvent::ChangeBPM(toid_beat::Beat::from(0), bpm),
+                SchedulingStateEvent::ChangeBPM(toid_music_info::Beat::from(0), bpm),
             ))
             .unwrap();
         Ok(())

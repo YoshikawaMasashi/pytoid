@@ -6,9 +6,7 @@ use pyo3::prelude::{
 use pyo3::types::{PyBool, PyIterator};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
 
-use toid::data::music_info::beat as toid_beat;
-use toid::data::music_info::pitch as toid_pitch;
-use toid::data::music_info::pitch_in_octave as toid_pitch_in_octave;
+use toid::data::music_info as toid_music_info;
 use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
@@ -138,7 +136,7 @@ fn pyany_to_beat_vec(pyany: &PyAny) -> PyResult<Vec<Beat>> {
         let mut beat_vec = vec![];
         for &b in pyany.as_slice()? {
             beat_vec.push(Beat {
-                beat: toid_beat::Beat::from(b),
+                beat: toid_music_info::Beat::from(b),
             });
         }
         Ok(beat_vec)
@@ -158,7 +156,7 @@ fn pyany_to_pitch_vec(pyany: &PyAny) -> PyResult<Vec<Pitch>> {
         let mut pitch_vec = vec![];
         for &p in pyany.as_slice()? {
             pitch_vec.push(Pitch {
-                pitch: toid_pitch::Pitch::from(p),
+                pitch: toid_music_info::Pitch::from(p),
             });
         }
         Ok(pitch_vec)
@@ -178,7 +176,7 @@ fn pyany_to_pitch_in_octave_vec(pyany: &PyAny) -> PyResult<Vec<PitchInOctave>> {
         let mut pitch_vec = vec![];
         for &p in pyany.as_slice()? {
             pitch_vec.push(PitchInOctave {
-                pitch: toid_pitch_in_octave::PitchInOctave::from(p),
+                pitch: toid_music_info::PitchInOctave::from(p),
             });
         }
         Ok(pitch_vec)

@@ -1,7 +1,7 @@
 use pyo3::class::PyObjectProtocol;
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
 
-use toid::data::music_info::track;
+use toid::data::music_info as toid_music_info;
 
 use super::instrument::Instrument;
 use super::Phrase;
@@ -9,11 +9,11 @@ use super::Phrase;
 #[pyclass]
 #[derive(Clone)]
 pub struct Track {
-    pub track: track::Track,
+    pub track: toid_music_info::Track,
 }
 
 impl Track {
-    pub fn from_toid_track(toid_track: track::Track) -> Self {
+    pub fn from_toid_track(toid_track: toid_music_info::Track) -> Self {
         Self { track: toid_track }
     }
 }
@@ -22,7 +22,7 @@ impl Track {
 impl Track {
     #[new]
     pub fn new(phrase: Phrase, instrument: Instrument, vol: f32, pan: f32) -> Self {
-        let toid_track = track::Track {
+        let toid_track = toid_music_info::Track {
             phrase: phrase.phrase,
             instrument: instrument.instrument,
             vol,

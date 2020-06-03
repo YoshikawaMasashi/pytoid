@@ -1,19 +1,19 @@
 use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
-use toid::data::music_info::beat as toid_beat;
+use toid::data::music_info as toid_music_info;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct Beat {
-    pub beat: toid_beat::Beat,
+    pub beat: toid_music_info::Beat,
 }
 
 #[pymethods]
 impl Beat {
     #[new]
     fn new(beat: f32) -> Self {
-        let beat = toid_beat::Beat::from(beat);
+        let beat = toid_music_info::Beat::from(beat);
         Beat { beat }
     }
 }
@@ -21,7 +21,7 @@ impl Beat {
 impl From<f32> for Beat {
     fn from(beat: f32) -> Self {
         Beat {
-            beat: toid_beat::Beat::from(beat),
+            beat: toid_music_info::Beat::from(beat),
         }
     }
 }
