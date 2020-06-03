@@ -7,6 +7,46 @@ TODO: MML は規格が乱立気味なので，どこのものに対応してい�
     にまとめてる
 '''
 
+def find_corresponding_parenthesis(s, offs):
+    '''
+    Args
+        s (str):
+        offs (int): s[offs] must be a parenthesis
+    Returns
+        (int): offset of corresponding paernthesis
+    '''
+    parens = '()[]{}<>'
+    c = s[offs]
+    idx = parens.find(c)
+    assert idx > 0
+    direction = -1 if idx % 2 else +1
+    c2 = parens[idx ^ 1]
+    cnt = 0
+    while 0 <= offs < len(s):
+        if s[offs] == c:
+            cnt += 1
+        elif s[offs] == c2:
+            cnt -= 1
+        if cnt == 0:
+            return offs
+        offs += direction
+    return offs
+
+def parse_symbol(s, c):
+    '''
+    Args
+        s (str):
+        c (str): should be a character
+    Returns
+        offs (int): number of c read from s
+    '''
+    offs = 0
+    for offs in range(len(s)):
+        if s[offs] != c:
+            return offs
+    offs = len(s)
+    return offs
+
 
 def parse_int(s):
     '''
@@ -53,12 +93,19 @@ def generate_chord_macro():
                 ('7', [0, 4, 7, 10]),
                 ('37', [0, 4, 10]),
                 ('57', [0, 7, 10]),
+                ('7O', [0, 7, 10, 16]),
                 ('M7', [0, 4, 7, 11]),
+                ('M37', [0, 4, 11]),
                 ('M57', [0, 7, 11]),
+                ('M7O', [0, 7, 11, 16]),
                 ('m7', [0, 3, 7, 10]),
+                ('m37', [0, 3, 10]),
                 ('m57', [0, 7, 10]),
+                ('m7O', [0, 7, 10, 15]),
                 ('dim', [0, 3, 6]),
+                ('dim7', [0, 3, 6, 9]),
                 ('aug', [0, 4, 8]),
+                ('augO', [0, 8, 16]),
                 ('sus4', [0, 5, 7]),
                 ('sus4O', [0, 7, 17]),
             ]
@@ -76,6 +123,7 @@ generate_chord_macro()
 
 def quote_chord(mml):
     return mml
+    """
     ret = ''
     offs = 0
     while offs < len(mml):
@@ -85,6 +133,7 @@ def quote_chord(mml):
             pass
         offs += 1
     return mml
+    """
 
 
 def extend_macro(mml):
@@ -108,41 +157,61 @@ def extend_macro(mml):
     return ret
 
 
-def parse_mml(mml, verbose=False):
+def parse_mml(mml, parser_state=None, verbose=False):
     """
     ----
     Args:
         mml (str):
             MML string. 対応コマンドは下記参照
+        parser_state (dict or None):
+            パーサーの変数の状態．None の場合，以下が設定されます．
+            {
+                'l': 8,  # length (l8)
+                'o': 4,  # octave (o4)
+                'k': 0,  # key-transpose (k0)
+            }
     Returns:
-        (
-            pitch_list, (list of (int or tuple-of-int)):
+        {
+            "pitch" (list of (int or tuple-of-int)):
                 各時刻に発音するノートナンバーのリスト．
                 単音ならノートナンバーは単一の int として表現され，
                 和音ならノートナンバーは int の tuple として表現される．
                 ノートナンバーは C4 が 60.
-            dur_list (list of float): 
+                休符については不定
+            "duration" (list of float):
                 音符長または休符長のリスト．長さの単位は拍数．
                 正の値は音符，負の値は休符．
-        )
+            "parser_state" (dict):
+                パーサーの変数の状態．
+        }
     Examples:
-        read_mml("l4cderefg")
-            => ([60, 62, 64, 0, 64, 65, 67], [1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0])
-        read_mml("o5l1 'egb'")
-            => ([(76, 79, 83)], [4.0])
+        parse_mml("l4cderefg")
+            => {
+                "pitch": [60, 62, 64, 0, 64, 65, 67],
+                "duration": [1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0],
+                "parse_state": {...}
+            }
+        parse_mml("o5l1 'egb'")
+            => {
+                "pitch": [(76, 79, 83)],
+                "duration": [4.0],
+                "parse_state": {...}
+            }
     MML の例:
         - (かえるのうた) "l4 cdefedcr efgagfer crcrcrcr l8 ccddeefferdrcrrr"
         - (ふるさと) "l4 ccc d.e8d eefg2. fga e.f8e dd<b>c2."
     MML 対応コマンド:
-        cdefgabr (音符，休符)
-        -+ (フラット・シャープ)
-        . (付点)
+        cdefgabr (音符・休符)
+        -+ (フラット・シャープ: 後置)
+        . (付点: 後置)
+        _^ (一時的なオクターブ指定: 前置)
+        ~ (音価の延長: 後置)
         >< (オクターブ上下)
         l (音価指定)
         o (オクターブ指定)
-        _~ (一時的なオクターブ指定)
         k (キートランスポーズ)
         "' (和音)
+        [] (連符)
         上記に加えてコードマクロ（独自定義）が利用可能です．
            C => "ceg"
            C^ => "egc" (第一転回)
@@ -150,38 +219,56 @@ def parse_mml(mml, verbose=False):
            CO => "cge" (Open-voicing)
            Csus4 => "cfg"
            他（全ての定義済みマクロは generate_chord_macro の定義を参照ください）
-        最初にマクロが展開された後，MML 文字列として解釈されます．  
+        最初にマクロが展開された後，MML 文字列として解釈されます．
+
+    実装について
+        入れ子になりうるコマンド（括弧）のみ再帰的に処理して
+        それ以外は非再帰的に処理している
+        （が，全て再帰的にした方が簡潔に記述できるかもしれない．）
     """
-    mml = quote_chord(mml)
-    if verbose:
-       print('chord quoted: {}'.format(mml))
     mml = extend_macro(mml)
     if verbose:
         print('macro extended: {}'.format(mml))
+
+    if parser_state is None:
+        state = {
+            'l': 8,  # length (l8)
+            'o': 4,  # octave (o4)
+            'k': 0,  # key-transpose (k0)
+        }
+    else:
+        state = parser_state
+
+    val_temp_o = 0  # _, ^（ノート・和音を抜けると解除される）
+    chord_val_o = None  # 和音内での o（和音を抜けると解除される）
+
     pitch_list, dur_list = [], []
-    val_l = 4  # length (l4)
-    val_o = 4  # octave (o4)
-    val_k = 0  # key-transpose (k0)
-    val_temp_o = 0  # _, ~
     offs = 0
-    futen = 0
+    val_futen = 0  # .
+    val_hold = 0  # ~
     chord = []
     in_chord = False
     while offs < len(mml):
         c = mml[offs]
         n = 'cdefgabr'.find(c)
         if n >= 0:  # new note!
-            if futen > 0:
-                dur_list[-1] *= 2 - 0.5**futen
-                futen = 0  # clear futen
+            # process postfix
+            if val_futen > 0:
+                dur_list[-1] *= 2 - 0.5**val_futen
+                val_futen = 0  # clear futen
+            if val_hold > 0:
+                dur_list[-1] *= 1 + val_hold
+                val_hold = 0
+
+            # compute note number
             chroma = [0, 2, 4, 5, 7, 9, 11, 0][n]
             if in_chord:
-                chord.append(chroma + (chord_val_o + 1) * 12 + val_k)
+                chord.append(chroma + (chord_val_o + 1) * 12 + state['k'])
                 if len(chord) > 1 and chord[-2] >= chord[-1]:
                     chord[-1] = 12 - (chord[-2] - chord[-1]) % 12 + chord[-2]
             else:  # single note
-                pitch_list.append(chroma + (val_o + val_temp_o + 1) * 12 + val_k)
-                dur_list.append(4/val_l if n < 7 else -4/val_l)
+                pitch_list.append(chroma + (state['o'] + val_temp_o + 1) * 12 + state['k'])
+                dur_list.append(4 / state['l'] if n < 7 else -4 / state['l'])
                 val_temp_o = 0
             offs += 1
             continue
@@ -190,23 +277,24 @@ def parse_mml(mml, verbose=False):
                 pitch_list.append(tuple(chord))
                 in_chord = False
                 chord = []
-                dur_list.append(4/val_l)
+                dur_list.append(4 / state['l'])
+                val_temp_o = 0
                 offs += 1
                 continue
             else:  # start of chord
                 in_chord = True
-                chord_val_o = val_o
+                chord_val_o = state['o'] + val_temp_o
                 offs += 1
                 continue
         if '0' <= c <= '9' and not in_chord:  # temporary l-setting
             l, delta_offs = parse_int(mml[offs:])
-            dur_list[-1] = -4/l if dur_list[-1] <= 0 else 4/l
+            dur_list[-1] = -4 / l if dur_list[-1] <= 0 else 4 / l
             offs += delta_offs
             continue
         # other commands
         if c == 'l' and not in_chord:  # length
             offs += 1
-            val_l, delta_offs = parse_int(mml[offs:])
+            state['l'], delta_offs = parse_int(mml[offs:])
             offs += delta_offs
             continue
         elif c == 'o':  # octave
@@ -215,12 +303,12 @@ def parse_mml(mml, verbose=False):
             if in_chord:
                 chord_val_o = val
             else:
-                val_o = val
+                state['o'] = val
             offs += delta_offs
             continue
         elif c == 'k' and not in_chord:  # key-transpose
             offs += 1
-            val_k, delta_offs = parse_int(mml[offs:])
+            state['k'], delta_offs = parse_int(mml[offs:])
             offs += delta_offs
             continue
         elif c == '+':
@@ -237,25 +325,55 @@ def parse_mml(mml, verbose=False):
             if in_chord:
                 chord_val_o += 1
             else:
-                val_o += 1
+                state['o'] += 1
         elif c == '<':
             if in_chord:
                 chord_val_o -= 1
             else:
-                val_o -= 1
+                state['o'] -= 1
         elif c == '.':
-            futen += 1
-        elif c == '~':
+            val_futen += 1
+        elif c == '^':
             val_temp_o += 1
         elif c == '_':
             val_temp_o -= 1
+        elif c == '~':  # 直前のノートの長さを (~ 記号の数) 倍だけ伸ばす
+            val_hold += 1
+        elif c == '[':  # 連符 再帰的に処理する
+            idx = find_corresponding_parenthesis(mml, offs)
+            # 中身を再帰的に処理
+            res = parse_mml(mml[offs + 1:idx], parser_state=state)
+            offs = idx + 1
+            # 長さに関する postfix を処理（NOTE: 通常のノートの処理とまとめられないか？）
+            l, delta_offs = parse_int(mml[offs:])
+            par_dur = 4 / (l if l > 0 else state['l'])
+            offs += delta_offs
+            par_futen = parse_symbol(mml[offs:], '.')
+            offs += par_futen
+            par_hold = parse_symbol(mml[offs:], '~')
+            offs += par_hold
+            par_dur *= (2 - 2**(-par_futen)) * (1 + par_hold)
+            dur_ratio = par_dur / sum([abs(_) for _ in res["duration"]])
+            # 中身を展開
+            pitch_list += res["pitch"]
+            dur_list += [_ * dur_ratio for _ in res["duration"]]
+            continue
         offs += 1
     # end of mml
-    if futen > 0:
-        dur_list[-1] *= 2 - 0.5**futen
-        futen = 0  # clear futen
-    return pitch_list, dur_list
 
+    # process last postfix
+    if val_futen > 0:
+        dur_list[-1] *= 2 - 0.5**val_futen
+        val_futen = 0
+    if val_hold > 0:
+        dur_list[-1] *= 1 + val_hold
+        val_hold = 0
+
+    return {
+        "pitch": pitch_list,
+        "duration": dur_list,
+        "parser_state": state
+    }
 
 def def_macro(key, value):
     if ' ' in key:

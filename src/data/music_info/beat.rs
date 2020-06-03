@@ -1,5 +1,5 @@
-use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult, Python};
+use pyo3::class::{PyNumberProtocol, PyObjectProtocol};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
 use toid::data::music_info::beat as toid_beat;
 
@@ -27,12 +27,11 @@ impl From<f32> for Beat {
 }
 
 impl Beat {
-    pub fn from_py_any<'p>(py: Python<'p>, beat: &PyAny) -> PyResult<Beat> {
-        let beat: PyObject = beat.into();
-        match beat.extract(py) {
+    pub fn from_py_any(beat: &PyAny) -> PyResult<Beat> {
+        match beat.extract() {
             Ok(beat) => Ok(beat),
             Err(_e) => {
-                let beat: f32 = beat.extract(py)?;
+                let beat: f32 = beat.extract()?;
                 Ok(Beat::from(beat))
             }
         }
@@ -49,5 +48,17 @@ impl PyObjectProtocol for Beat {
     fn __str__(&self) -> PyResult<String> {
         let s = format!("{}", self.beat.to_f32());
         Ok(s)
+    }
+}
+
+#[pyproto]
+impl PyNumberProtocol for Beat {
+    fn __add__(lhs: &PyAny, rhs: &PyAny) -> PyResult<Self> {
+        let lhs = Beat::from_py_any(lhs)?;
+        let rhs = Beat::from_py_any(rhs)?;
+
+        Ok(Beat {
+            beat: lhs.beat + rhs.beat,
+        })
     }
 }

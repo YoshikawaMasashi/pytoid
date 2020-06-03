@@ -58,12 +58,12 @@ class PyTest(TestCommand):
 
 
 setup_requires = ["setuptools-rust>=0.10.1", "wheel"]
-install_requires = []
+install_requires = ["numpy"]
 tests_require = install_requires + ["pytest", "pytest-benchmark"]
 
 setup(
     name="toid",
-    version="0.0.10a0",
+    version="0.0.11a0",
     classifiers=[
         "License :: OSI Approved :: MIT License",
         "Development Status :: 3 - Alpha",
