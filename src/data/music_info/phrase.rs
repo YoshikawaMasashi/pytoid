@@ -246,7 +246,8 @@ impl PyMappingProtocol for Phrase {
                     start.beat,
                 );
                 let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
-                let phrase = phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
+                let phrase =
+                    phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
                 Ok(Self { phrase })
             }
             (false, false) => {
@@ -260,7 +261,8 @@ impl PyMappingProtocol for Phrase {
                     phrase_operation::condition::start_smaller(self.phrase.clone(), stop.beat),
                 );
                 let (phrase, _) = phrase_operation::split_by_condition(self.phrase.clone(), cond);
-                let phrase = phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
+                let phrase =
+                    phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
                 let phrase = phrase.set_length(stop.beat - start.beat);
                 Ok(Self { phrase })
             }
