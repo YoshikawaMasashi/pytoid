@@ -11,7 +11,7 @@ use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
 
-use super::data::music_info::{Beat, Phrase, Pitch, PitchInOctave, PitchInterval};
+use super::data::music_info::{Beat, Phrase, Pitch, PitchInOctave, PitchInterval, Scale};
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
@@ -171,26 +171,6 @@ fn pyany_to_pitch_vec(pyany: &PyAny) -> PyResult<Vec<Pitch>> {
     }
 }
 
-fn pyany_to_pitch_in_octave_vec(pyany: &PyAny) -> PyResult<Vec<PitchInOctave>> {
-    if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
-        let mut pitch_vec = vec![];
-        for &p in pyany.as_slice()? {
-            pitch_vec.push(PitchInOctave {
-                pitch: toid_music_info::PitchInOctave::from(p),
-            });
-        }
-        Ok(pitch_vec)
-    } else {
-        let pyany = pyany_to_vec_pyany(pyany)?;
-        let mut pitch_vec = vec![];
-        for p in pyany.iter() {
-            let p = PitchInOctave::from_py_any(p)?;
-            pitch_vec.push(p);
-        }
-        Ok(pitch_vec)
-    }
-}
-
 #[pyfunction]
 pub fn round_line(
     line_beat: &PyAny,
@@ -203,13 +183,13 @@ pub fn round_line(
     let line_pitch = pyany_to_pitch_vec(line_pitch)?;
     let start = pyany_to_beat_vec(start)?;
     let duration = pyany_to_beat_vec(duration)?;
-    let scale = pyany_to_pitch_in_octave_vec(scale)?;
+    let scale = Scale::from_py_any(scale)?;
 
     let line_beat = line_beat.iter().map(|beat| beat.beat).collect();
     let line_pitch = line_pitch.iter().map(|pitch| pitch.pitch).collect();
     let start = start.iter().map(|beat| beat.beat).collect();
     let duration = duration.iter().map(|duration| duration.beat).collect();
-    let scale = scale.iter().map(|pitch| pitch.pitch).collect();
+    let scale = scale.scale;
 
     let phrase = phrase_operation::round_line(line_beat, line_pitch, start, duration, scale);
     Ok(Phrase { phrase })

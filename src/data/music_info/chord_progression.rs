@@ -15,12 +15,10 @@ pub struct ChordProgression {
 impl ChordProgression {
     #[classmethod]
     fn from_chords(_cls: &PyType, step: Beat, chords: Vec<Chord>) -> PyResult<Self> {
-        let toid_chords: Vec<toid_music_info::Chord> = chords.iter().map(|chord| chord.chord.clone()).collect();
-        Ok(
-            ChordProgression{
-                prog: toid_music_info::ChordProgression::from((step.beat, toid_chords))
-            }
-        )
+        let toid_chords: Vec<toid_music_info::Chord> =
+            chords.iter().map(|chord| chord.chord.clone()).collect();
+        Ok(ChordProgression {
+            prog: toid_music_info::ChordProgression::from((step.beat, toid_chords)),
+        })
     }
 }
-
