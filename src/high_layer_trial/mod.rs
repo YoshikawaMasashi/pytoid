@@ -11,7 +11,9 @@ use toid::high_layer_trial::music_language;
 use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
 
-use super::data::music_info::{Beat, Phrase, Pitch, PitchInOctave, PitchInterval, Scale};
+use super::data::music_info::{
+    Beat, ChordProgression, Phrase, Pitch, PitchInOctave, PitchInterval, Scale,
+};
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
@@ -196,6 +198,24 @@ pub fn round_line(
 }
 
 #[pyfunction]
+pub fn four_comp(prog: &PyAny, min_pitch: &PyAny, max_pitch: &PyAny) -> PyResult<Phrase> {
+    let prog: ChordProgression = prog.extract()?;
+    let min_pitch = Pitch::from_py_any(min_pitch)?;
+    let max_pitch = Pitch::from_py_any(max_pitch)?;
+
+    let phrase = phrase_operation::four_comp(prog.prog, min_pitch.pitch, max_pitch.pitch);
+    Ok(Phrase { phrase })
+}
+
+#[pyfunction]
+pub fn four_bass(prog: &PyAny) -> PyResult<Phrase> {
+    let prog: ChordProgression = prog.extract()?;
+
+    let phrase = phrase_operation::four_bass(prog.prog);
+    Ok(Phrase { phrase })
+}
+
+#[pyfunction]
 pub fn sixteen_shuffle(phrase: Phrase) -> Phrase {
     let new_toid_phrase = phrase_operation::sixteen_shuffle(phrase.phrase);
     Phrase {
@@ -375,6 +395,8 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(split_by_condition))?;
     m.add_wrapped(wrap_pyfunction!(round_line))?;
     m.add_wrapped(wrap_pyfunction!(sixteen_shuffle))?;
+    m.add_wrapped(wrap_pyfunction!(four_comp))?;
+    m.add_wrapped(wrap_pyfunction!(four_bass))?;
 
     m.add_class::<Condition>()?;
     m.add_wrapped(wrap_pyfunction!(pitch_larger))?;
