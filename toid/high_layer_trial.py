@@ -14,6 +14,8 @@ shuffle_start = toid.high_layer_trial.shuffle_start
 split_by_condition = toid.high_layer_trial.split_by_condition
 round_line = toid.high_layer_trial.round_line
 sixteen_shuffle = toid.high_layer_trial.sixteen_shuffle
+four_comp = toid.high_layer_trial.four_comp
+four_bass = toid.high_layer_trial.four_bass
 
 Condition = toid.high_layer_trial.Condition
 pitch_larger = toid.high_layer_trial.pitch_larger
