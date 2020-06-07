@@ -49,7 +49,7 @@ fn to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
 #[pymethods]
 impl Phrase {
     #[new]
-    fn new(_cls: &PyType) -> Self {
+    fn new() -> Self {
         Self {
             phrase: ToidPhrase::Pitch(toid_music_info::Phrase::new()),
         }

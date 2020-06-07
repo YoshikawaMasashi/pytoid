@@ -118,8 +118,11 @@ class Player(object):
     def clear_sections(self):
         self.player.clear_sections()
 
-    def get_track_names(self):
-        return self.player.get_track_names(self.current_beat)
+    def get_pitch_track_names(self):
+        return self.player.get_pitch_track_names(self.current_beat)
+
+    def get_sample_track_names(self):
+        return self.player.get_sample_track_names(self.current_beat)
 
     def save_state(self, path):
         self.player.save_state(path)
