@@ -18,4 +18,4 @@ pub use pitch::Pitch;
 pub use pitch_in_octave::PitchInOctave;
 pub use pitch_interval::PitchInterval;
 pub use scale::Scale;
-pub use track::{Track, ToidTrack};
+pub use track::{ToidTrack, Track};

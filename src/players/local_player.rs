@@ -13,7 +13,7 @@ use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
 use toid::players::player::Player;
 
-use super::super::data::music_info::{Beat, Instrument, Phrase, ToidPhrase, Track, ToidTrack};
+use super::super::data::music_info::{Beat, Instrument, Phrase, ToidPhrase, ToidTrack, Track};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -131,12 +131,16 @@ impl LocalPlayer {
                         >,
                 )
                 .unwrap();
-            },
+            }
             ToidPhrase::Sample(phrase) => {
-                let sample_name = if let toid_music_info::Instrument::Sample(sample_name) = instrument.instrument {
+                let sample_name = if let toid_music_info::Instrument::Sample(sample_name) =
+                    instrument.instrument
+                {
                     sample_name
                 } else {
-                    return Err(PyErr::new::<exceptions::ValueError, _>("instrument is not sample"))
+                    return Err(PyErr::new::<exceptions::ValueError, _>(
+                        "instrument is not sample",
+                    ));
                 };
                 send_phrase::send_sample_phrase(
                     phrase,
@@ -172,7 +176,7 @@ impl LocalPlayer {
                         SectionStateEvent::NewPitchTrack(name.clone(), track),
                     ))
                     .unwrap();
-            },
+            }
             ToidTrack::Sample(track) => {
                 self.player
                     .send_event(MusicStateEvent::SectionStateEvent(
@@ -180,7 +184,7 @@ impl LocalPlayer {
                         SectionStateEvent::NewSampleTrack(name.clone(), track),
                     ))
                     .unwrap();
-            },
+            }
         }
         Ok(())
     }

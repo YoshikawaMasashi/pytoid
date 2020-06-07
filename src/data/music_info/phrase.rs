@@ -12,7 +12,7 @@ use toid::data::music_info as toid_music_info;
 use toid::data::music_info::Note as toid_note_trait;
 use toid::high_layer_trial::phrase_operation;
 
-use super::super::super::high_layer_trial::{concat, marge, split_by_condition};
+use super::super::super::high_layer_trial::split_by_condition;
 use super::{Beat, Pitch};
 
 #[derive(Clone)]
@@ -24,7 +24,7 @@ pub enum ToidPhrase {
 #[pyclass]
 #[derive(Clone)]
 pub struct Phrase {
-    pub phrase: ToidPhrase
+    pub phrase: ToidPhrase,
 }
 
 fn to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
@@ -110,35 +110,32 @@ impl Phrase {
             start: start.beat,
             duration: duration.beat,
         };
-        if let ToidPhrase::Pitch(phrase) = self.phrase {
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let new_toid_phrase = phrase.add_note(toid_note);
             Ok(Self {
                 phrase: ToidPhrase::Pitch(new_toid_phrase),
             })
         } else {
-            Err(PyErr::new::<exceptions::ValueError, _>("phrase is not PitchPhrase"))
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
         }
-
     }
 
     fn set_length(&self, length: &PyAny) -> PyResult<Self> {
         let length = Beat::from_py_any(length)?;
-        match self.phrase {
-            ToidPhrase::Pitch(phrase) => {
-                Ok(Self {
-                    phrase: ToidPhrase::Pitch(phrase.set_length(length.beat)),
-                })
-            },
-            ToidPhrase::Sample(phrase) => {
-                Ok(Self {
-                    phrase: ToidPhrase::Sample(phrase.set_length(length.beat)),
-                })
-            },
+        match &self.phrase {
+            ToidPhrase::Pitch(phrase) => Ok(Self {
+                phrase: ToidPhrase::Pitch(phrase.set_length(length.beat)),
+            }),
+            ToidPhrase::Sample(phrase) => Ok(Self {
+                phrase: ToidPhrase::Sample(phrase.set_length(length.beat)),
+            }),
         }
     }
 
     fn notes(&self) -> PyResult<Vec<(f32, f32, f32)>> {
-        if let ToidPhrase::Pitch(phrase) = self.phrase {
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let toid_notes_vec = phrase.note_vec();
             let mut ret = vec![];
             for toid_note in toid_notes_vec.iter() {
@@ -150,27 +147,25 @@ impl Phrase {
             }
             Ok(ret)
         } else {
-            Err(PyErr::new::<exceptions::ValueError, _>("phrase is not PitchPhrase"))
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
         }
     }
 
     fn get_length(&self) -> Beat {
-        match self.phrase {
-            ToidPhrase::Pitch(phrase) => {
-                Beat {
-                    beat: phrase.length,
-                }
+        match &self.phrase {
+            ToidPhrase::Pitch(phrase) => Beat {
+                beat: phrase.length,
             },
-            ToidPhrase::Sample(phrase) => {
-                Beat {
-                    beat: phrase.length,
-                }
+            ToidPhrase::Sample(phrase) => Beat {
+                beat: phrase.length,
             },
         }
     }
 
     fn get_pitchs(&self) -> PyResult<Py<PyArray1<f32>>> {
-        if let ToidPhrase::Pitch(phrase) = self.phrase {
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let toid_notes_vec = phrase.note_vec();
             let mut pitchs_vec: Vec<f32> = vec![];
             for toid_note in toid_notes_vec.iter() {
@@ -180,12 +175,14 @@ impl Phrase {
             let py = gil.python();
             Ok(PyArray1::<f32>::from_vec(py, pitchs_vec).to_owned())
         } else {
-            Err(PyErr::new::<exceptions::ValueError, _>("phrase is not PitchPhrase"))
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
         }
     }
 
     fn get_starts(&self) -> Py<PyArray1<f32>> {
-        let starts_vec = match self.phrase {
+        let starts_vec = match &self.phrase {
             ToidPhrase::Pitch(phrase) => {
                 let toid_notes_vec = phrase.note_vec();
                 let mut starts_vec: Vec<f32> = vec![];
@@ -193,7 +190,7 @@ impl Phrase {
                     starts_vec.push(toid_note.get_start().to_f32());
                 }
                 starts_vec
-            },
+            }
             ToidPhrase::Sample(phrase) => {
                 let toid_notes_vec = phrase.note_vec();
                 let mut starts_vec: Vec<f32> = vec![];
@@ -201,7 +198,7 @@ impl Phrase {
                     starts_vec.push(toid_note.get_start().to_f32());
                 }
                 starts_vec
-            },
+            }
         };
         let gil = Python::acquire_gil();
         let py = gil.python();
@@ -209,7 +206,7 @@ impl Phrase {
     }
 
     fn get_durations(&self) -> PyResult<Py<PyArray1<f32>>> {
-        if let ToidPhrase::Pitch(phrase) = self.phrase {
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let toid_notes_vec = phrase.note_vec();
             let mut durations_vec: Vec<f32> = vec![];
             for toid_note in toid_notes_vec.iter() {
@@ -219,7 +216,9 @@ impl Phrase {
             let py = gil.python();
             Ok(PyArray1::<f32>::from_vec(py, durations_vec).to_owned())
         } else {
-            Err(PyErr::new::<exceptions::ValueError, _>("phrase is not PitchPhrase"))
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
         }
     }
 }
@@ -227,7 +226,7 @@ impl Phrase {
 #[pyproto]
 impl PyObjectProtocol for Phrase {
     fn __str__(&self) -> PyResult<String> {
-        let s = match self.phrase {
+        let s = match &self.phrase {
             ToidPhrase::Pitch(phrase) => serde_json::to_string(&phrase).unwrap(),
             ToidPhrase::Sample(phrase) => serde_json::to_string(&phrase).unwrap(),
         };
@@ -266,9 +265,17 @@ impl PyNumberProtocol for Phrase {
         let rhs: Phrase = rhs.extract()?;
 
         let new_toid_phrase = match (lhs.phrase, rhs.phrase) {
-            (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => ToidPhrase::Sample(phrase_operation::marge(phrase1, phrase2)),
-            (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => ToidPhrase::Pitch(phrase_operation::marge(phrase1, phrase2)),
-            _ => {return Err(PyErr::new::<exceptions::ValueError, _>("phrase type is not equal"));}
+            (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => {
+                ToidPhrase::Sample(phrase_operation::marge(phrase1, phrase2))
+            }
+            (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => {
+                ToidPhrase::Pitch(phrase_operation::marge(phrase1, phrase2))
+            }
+            _ => {
+                return Err(PyErr::new::<exceptions::ValueError, _>(
+                    "phrase type is not equal",
+                ));
+            }
         };
 
         Ok(Phrase {
@@ -293,9 +300,17 @@ impl PyNumberProtocol for Phrase {
         let rhs: Phrase = rhs.extract()?;
 
         let new_toid_phrase = match (lhs.phrase, rhs.phrase) {
-            (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => ToidPhrase::Sample(phrase_operation::concat(phrase1, phrase2)),
-            (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => ToidPhrase::Pitch(phrase_operation::concat(phrase1, phrase2)),
-            _ => {return Err(PyErr::new::<exceptions::ValueError, _>("phrase type is not equal"));}
+            (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => {
+                ToidPhrase::Sample(phrase_operation::concat(phrase1, phrase2))
+            }
+            (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => {
+                ToidPhrase::Pitch(phrase_operation::concat(phrase1, phrase2))
+            }
+            _ => {
+                return Err(PyErr::new::<exceptions::ValueError, _>(
+                    "phrase type is not equal",
+                ));
+            }
         };
 
         Ok(Phrase {
@@ -305,23 +320,25 @@ impl PyNumberProtocol for Phrase {
 }
 
 impl Phrase {
-    fn getitem_for_each_phrase<N: toid_music_info::Note + Ord + Eq + Clone> (&self, phrase: toid_music_info::Phrase<N>, start: &PyAny, stop: &PyAny) -> PyResult<toid_music_info::Phrase<N>> {
+    fn getitem_for_each_phrase<N: toid_music_info::Note + Ord + Eq + Clone>(
+        &self,
+        phrase: &toid_music_info::Phrase<N>,
+        start: &PyAny,
+        stop: &PyAny,
+    ) -> PyResult<toid_music_info::Phrase<N>> {
         let phrase = match (start.is_none(), stop.is_none()) {
-            (true, true) => phrase,
+            (true, true) => phrase.clone(),
             (true, false) => {
                 let stop = Beat::from_py_any(stop)?;
-                let cond =
-                    phrase_operation::condition::start_smaller(phrase.clone(), stop.beat);
+                let cond = phrase_operation::condition::start_smaller(phrase.clone(), stop.beat);
                 let (phrase, _) = phrase_operation::split_by_condition(phrase.clone(), cond);
                 let phrase = phrase.set_length(stop.beat);
                 phrase
             }
             (false, true) => {
                 let start = Beat::from_py_any(start)?;
-                let cond = phrase_operation::condition::start_larger_equal(
-                    phrase.clone(),
-                    start.beat,
-                );
+                let cond =
+                    phrase_operation::condition::start_larger_equal(phrase.clone(), start.beat);
                 let (phrase, _) = phrase_operation::split_by_condition(phrase.clone(), cond);
                 let phrase =
                     phrase_operation::delay(phrase, toid_music_info::Beat::from(0) - start.beat);
@@ -331,10 +348,7 @@ impl Phrase {
                 let start = Beat::from_py_any(start)?;
                 let stop = Beat::from_py_any(stop)?;
                 let cond = phrase_operation::condition::and(
-                    phrase_operation::condition::start_larger_equal(
-                        phrase.clone(),
-                        start.beat,
-                    ),
+                    phrase_operation::condition::start_larger_equal(phrase.clone(), start.beat),
                     phrase_operation::condition::start_smaller(phrase.clone(), stop.beat),
                 );
                 let (phrase, _) = phrase_operation::split_by_condition(phrase.clone(), cond);
@@ -364,19 +378,19 @@ impl PyMappingProtocol for Phrase {
         let start: &PyAny = slice.getattr::<String>("start".to_string())?;
         let stop: &PyAny = slice.getattr::<String>("stop".to_string())?;
 
-        match self.phrase {
+        match &self.phrase {
             ToidPhrase::Pitch(phrase) => {
                 let phrase = self.getitem_for_each_phrase(phrase, start, stop)?;
-                Ok(Phrase{
-                    phrase: ToidPhrase::Pitch(phrase)
+                Ok(Phrase {
+                    phrase: ToidPhrase::Pitch(phrase),
                 })
-            },
+            }
             ToidPhrase::Sample(phrase) => {
                 let phrase = self.getitem_for_each_phrase(phrase, start, stop)?;
-                Ok(Phrase{
-                    phrase: ToidPhrase::Sample(phrase)
+                Ok(Phrase {
+                    phrase: ToidPhrase::Sample(phrase),
                 })
-            },
+            }
         }
     }
 }
