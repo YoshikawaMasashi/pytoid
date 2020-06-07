@@ -13,7 +13,7 @@ use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::local_player;
 use toid::players::player::Player;
 
-use super::super::data::music_info::{Beat, Instrument, Phrase, Track};
+use super::super::data::music_info::{Beat, Instrument, Phrase, ToidPhrase, Track, ToidTrack};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -110,36 +110,78 @@ impl LocalPlayer {
         instrument: Instrument,
     ) -> PyResult<()> {
         let beat = Beat::from_py_any(beat)?;
-        send_phrase::send_phrase(
-            phrase.phrase,
-            beat.beat,
-            track_name,
-            instrument.instrument,
-            1.0,
-            0.0,
-            Arc::clone(&self.player)
-                as Arc<
-                    dyn Player<
-                        MusicState,
-                        MusicStateEvent,
-                        WaveReader,
-                        (Vec<i16>, Vec<i16>),
-                        WaveReaderEvent,
-                    >,
-                >,
-        )
-        .unwrap();
+        match phrase.phrase {
+            ToidPhrase::Pitch(phrase) => {
+                send_phrase::send_pitch_phrase(
+                    phrase,
+                    beat.beat,
+                    track_name,
+                    instrument.instrument,
+                    1.0,
+                    0.0,
+                    Arc::clone(&self.player)
+                        as Arc<
+                            dyn Player<
+                                MusicState,
+                                MusicStateEvent,
+                                WaveReader,
+                                (Vec<i16>, Vec<i16>),
+                                WaveReaderEvent,
+                            >,
+                        >,
+                )
+                .unwrap();
+            },
+            ToidPhrase::Sample(phrase) => {
+                let sample_name = if let toid_music_info::Instrument::Sample(sample_name) = instrument.instrument {
+                    sample_name
+                } else {
+                    return Err(PyErr::new::<exceptions::ValueError, _>("instrument is not sample"))
+                };
+                send_phrase::send_sample_phrase(
+                    phrase,
+                    beat.beat,
+                    track_name,
+                    sample_name,
+                    1.0,
+                    0.0,
+                    Arc::clone(&self.player)
+                        as Arc<
+                            dyn Player<
+                                MusicState,
+                                MusicStateEvent,
+                                WaveReader,
+                                (Vec<i16>, Vec<i16>),
+                                WaveReaderEvent,
+                            >,
+                        >,
+                )
+                .unwrap();
+            }
+        }
         Ok(())
     }
 
     fn send_track(&self, track: Track, beat: &PyAny, name: String) -> PyResult<()> {
         let beat = Beat::from_py_any(beat)?;
-        self.player
-            .send_event(MusicStateEvent::SectionStateEvent(
-                beat.beat,
-                SectionStateEvent::NewTrack(name.clone(), track.track),
-            ))
-            .unwrap();
+        match track.track {
+            ToidTrack::Pitch(track) => {
+                self.player
+                    .send_event(MusicStateEvent::SectionStateEvent(
+                        beat.beat,
+                        SectionStateEvent::NewPitchTrack(name.clone(), track),
+                    ))
+                    .unwrap();
+            },
+            ToidTrack::Sample(track) => {
+                self.player
+                    .send_event(MusicStateEvent::SectionStateEvent(
+                        beat.beat,
+                        SectionStateEvent::NewSampleTrack(name.clone(), track),
+                    ))
+                    .unwrap();
+            },
+        }
         Ok(())
     }
 
@@ -163,7 +205,7 @@ impl LocalPlayer {
         })
     }
 
-    fn get_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
+    fn get_pitch_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
         let beat = Beat::from_py_any(beat)?;
         match self
             .player
@@ -171,14 +213,29 @@ impl LocalPlayer {
             .get_state()
             .unwrap()
             .get_section_state_by_beat(beat.beat)
-            .get_track(key)
+            .get_pitch_track(key)
         {
-            Some(toid_track) => Ok(Track::from_toid_track(toid_track)),
+            Some(toid_track) => Ok(Track::from_toid_pitch_track(toid_track)),
             None => Err(PyErr::new::<exceptions::ValueError, _>("Track Not Found")),
         }
     }
 
-    fn get_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
+    fn get_sample_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
+        let beat = Beat::from_py_any(beat)?;
+        match self
+            .player
+            .get_store()
+            .get_state()
+            .unwrap()
+            .get_section_state_by_beat(beat.beat)
+            .get_sample_track(key)
+        {
+            Some(toid_track) => Ok(Track::from_toid_sample_track(toid_track)),
+            None => Err(PyErr::new::<exceptions::ValueError, _>("Track Not Found")),
+        }
+    }
+
+    fn get_pitch_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
         let beat = Beat::from_py_any(beat)?;
         let track_names = self
             .player
@@ -186,7 +243,19 @@ impl LocalPlayer {
             .get_state()
             .unwrap()
             .get_section_state_by_beat(beat.beat)
-            .get_track_names();
+            .get_pitch_track_names();
+        Ok(track_names)
+    }
+
+    fn get_sample_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
+        let beat = Beat::from_py_any(beat)?;
+        let track_names = self
+            .player
+            .get_store()
+            .get_state()
+            .unwrap()
+            .get_section_state_by_beat(beat.beat)
+            .get_sample_track_names();
         Ok(track_names)
     }
 

@@ -23,6 +23,9 @@ impl Track {
     pub fn from_toid_pitch_track(toid_track: toid_music_info::Track<toid_music_info::PitchNote>) -> Self {
         Self { track: ToidTrack::Pitch(toid_track) }
     }
+    pub fn from_toid_sample_track(toid_track: toid_music_info::Track<toid_music_info::SampleNote>) -> Self {
+        Self { track: ToidTrack::Sample(toid_track) }
+    }
 }
 
 #[pymethods]
