@@ -13,10 +13,15 @@ use toid::high_layer_trial::phrase_operation;
 use super::super::super::high_layer_trial::{concat, marge, split_by_condition};
 use super::{Beat, Pitch};
 
+enum ToidPhrase {
+    Pitch(toid_music_info::Phrase<toid_music_info::PitchNote>),
+    Sample(toid_music_info::Phrase<toid_music_info::SampleNote>),
+}
+
 #[pyclass]
 #[derive(Clone)]
 pub struct Phrase {
-    pub phrase: toid_music_info::Phrase,
+    pub phrase: ToidPhrase
 }
 
 fn to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
