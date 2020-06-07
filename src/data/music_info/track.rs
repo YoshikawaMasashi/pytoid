@@ -1,13 +1,14 @@
 use pyo3::class::PyObjectProtocol;
-use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult};
+use pyo3::prelude::{pyclass, pymethods, pyproto, PyObject, PyResult, PyErr};
+use pyo3::exceptions;
 
 use toid::data::music_info as toid_music_info;
 
 use super::instrument::Instrument;
-use super::Phrase;
+use super::phrase::{ToidPhrase, Phrase};
 
 #[derive(Clone)]
-enum ToidTrack {
+pub enum ToidTrack {
     Pitch(toid_music_info::Track<toid_music_info::PitchNote>),
     Sample(toid_music_info::Track<toid_music_info::SampleNote>),
 }
@@ -20,7 +21,7 @@ pub struct Track {
 
 impl Track {
     pub fn from_toid_pitch_track(toid_track: toid_music_info::Track<toid_music_info::PitchNote>) -> Self {
-        Self { track: Pitch(toid_track) }
+        Self { track: ToidTrack::Pitch(toid_track) }
     }
 }
 
@@ -28,38 +29,38 @@ impl Track {
 impl Track {
     #[new]
     pub fn new(phrase: Phrase, instrument: Instrument, vol: f32, pan: f32) -> Self {
-        match self.phrase {
-            Pitch(phrase) => {
+        match phrase.phrase {
+            ToidPhrase::Pitch(phrase) => {
                 let toid_track = toid_music_info::Track {
                     phrase: phrase,
                     instrument: instrument.instrument,
                     vol,
                     pan,
                 };
-                Self { track: Pitch(toid_track) }
+                Self { track: ToidTrack::Pitch(toid_track) }
             },
-            Sample(phrase) => {
+            ToidPhrase::Sample(phrase) => {
                 let toid_track = toid_music_info::Track {
                     phrase: phrase,
                     instrument: instrument.instrument,
                     vol,
                     pan,
                 };
-                Self { track: Sample(toid_track) }
+                Self { track: ToidTrack::Sample(toid_track) }
             }
         }
     }
 
     pub fn set_phrase(&self, phrase: Phrase) -> PyResult<Self> {
         match (self.track, phrase.phrase) {
-            (Pitch(track), Pitch(phrase)) => {
+            (ToidTrack::Pitch(track), ToidPhrase::Pitch(phrase)) => {
                 Ok(Self {
-                    track: track.set_phrase(phrase),
+                    track: ToidTrack::Pitch(track.set_phrase(phrase)),
                 })
             },
-            (Sample(track), Sample(phrase)) => {
+            (ToidTrack::Sample(track), ToidPhrase::Sample(phrase)) => {
                 Ok(Self {
-                    track: track.set_phrase(phrase),
+                    track: ToidTrack::Sample(track.set_phrase(phrase)),
                 })
             }
             _ => {
@@ -70,14 +71,14 @@ impl Track {
 
     pub fn set_instrument(&self, instrument: Instrument) -> Self {
         match self.track {
-            Pitch(track) => {
+            ToidTrack::Pitch(track) => {
                 Self {
-                    track: Pitch(track.set_inst(instrument.instrument)),
+                    track: ToidTrack::Pitch(track.set_inst(instrument.instrument)),
                 }
             },
-            Sample(track) => {
+            ToidTrack::Sample(track) => {
                 Self {
-                    track: Sample(track.set_inst(instrument.instrument)),
+                    track: ToidTrack::Sample(track.set_inst(instrument.instrument)),
                 }
             }
         }
@@ -85,14 +86,14 @@ impl Track {
 
     pub fn set_vol(&self, vol: f32) -> Self {
         match self.track {
-            Pitch(track) => {
+            ToidTrack::Pitch(track) => {
                 Self {
-                    track: Pitch(track.set_vol(pan)),
+                    track: ToidTrack::Pitch(track.set_vol(vol)),
                 }
             },
-            Sample(track) => {
+            ToidTrack::Sample(track) => {
                 Self {
-                    track: Sample(track.set_vol(pan)),
+                    track: ToidTrack::Sample(track.set_vol(vol)),
                 }
             }
         }
@@ -100,14 +101,14 @@ impl Track {
 
     pub fn set_pan(&self, pan: f32) -> Self {
         match self.track {
-            Pitch(track) => {
+            ToidTrack::Pitch(track) => {
                 Self {
-                    track: Pitch(track.set_pan(pan)),
+                    track: ToidTrack::Pitch(track.set_pan(pan)),
                 }
             },
-            Sample(track) => {
+            ToidTrack::Sample(track) => {
                 Self {
-                    track: Sample(track.set_pan(pan)),
+                    track: ToidTrack::Sample(track.set_pan(pan)),
                 }
             }
         }
@@ -116,14 +117,14 @@ impl Track {
     #[getter]
     fn ph(&self) -> Phrase {
         match self.track {
-            Pitch(track) => {
+            ToidTrack::Pitch(track) => {
                 Phrase {
-                    phrase: Pitch(track.phrase),
+                    phrase: ToidPhrase::Pitch(track.phrase),
                 }
             },
-            Sample(track) => {
+            ToidTrack::Sample(track) => {
                 Phrase {
-                    phrase: Sample(track.phrase),
+                    phrase: ToidPhrase::Sample(track.phrase),
                 }
             }
         }
@@ -132,14 +133,14 @@ impl Track {
     #[getter]
     fn phrase(&self) -> Phrase {
         match self.track {
-            Pitch(track) => {
+            ToidTrack::Pitch(track) => {
                 Phrase {
-                    phrase: Pitch(track.phrase),
+                    phrase: ToidPhrase::Pitch(track.phrase),
                 }
             },
-            Sample(track) => {
+            ToidTrack::Sample(track) => {
                 Phrase {
-                    phrase: Sample(track.phrase),
+                    phrase: ToidPhrase::Sample(track.phrase),
                 }
             }
         }
@@ -150,8 +151,8 @@ impl Track {
 impl PyObjectProtocol for Track {
     fn __str__(&self) -> PyResult<String> {
         let s = match self.track {
-            Pitch(track) =>serde_json::to_string(track).unwrap(),
-            Sample(track) =>serde_json::to_string(track).unwrap(),
+            ToidTrack::Pitch(track) =>serde_json::to_string(&track).unwrap(),
+            ToidTrack::Sample(track) =>serde_json::to_string(&track).unwrap(),
         };
         Ok(s)
     }
