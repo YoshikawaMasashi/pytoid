@@ -52,12 +52,22 @@ class SamplePlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, str):
+            if isinstance(value, Phrase):
+                self.player.send_sample_phrase(value, key)
+            elif isinstance(value, Track):
+                self.player.player.send_track(value, self.player.current_beat, key)
+            elif isinstance(value, str):
                 self.player.send_sample_lang(value, key)
             else:
                 raise Exception("invalid value")
         else:
             raise Exception("invalid value")
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.player.player.get_sample_track(key, self.player.current_beat)
+        else:
+            raise Exception("invalid key")
 
 
 class Player(object):
@@ -118,8 +128,11 @@ class Player(object):
     def clear_sections(self):
         self.player.clear_sections()
 
-    def get_track_names(self):
-        return self.player.get_track_names(self.current_beat)
+    def get_pitch_track_names(self):
+        return self.player.get_pitch_track_names(self.current_beat)
+
+    def get_sample_track_names(self):
+        return self.player.get_sample_track_names(self.current_beat)
 
     def save_state(self, path):
         self.player.save_state(path)
@@ -127,12 +140,22 @@ class Player(object):
     def load_state(self, path):
         self.player.load_state(path)
 
+    def send_pitch_phrase(self, ph, name):
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
+        self.player.send_phrase(
+            ph, self.current_beat, name, inst
+        )
+
+    def send_sample_phrase(self, ph, name):
+        inst = Instrument.sample(self.default_sample)
+        self.player.send_phrase(
+            ph, self.current_beat, name, inst
+        )
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
-                inst = Instrument.sf2(self.default_sf2, self.preset_idx)
-                self.player.send_phrase(
-                    value, self.current_beat, key, inst)
+                self.send_pitch_phrase(value, key)
             elif isinstance(value, Track):
                 self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):
@@ -156,7 +179,7 @@ class Player(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            return self.player.get_track(key, self.current_beat)
+            return self.player.get_pitch_track(key, self.current_beat)
         else:
             raise Exception("invalid key")
 

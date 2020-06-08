@@ -1,7 +1,8 @@
 use numpy::error::IntoPyErr;
 use numpy::PyArray1;
+use pyo3::exceptions;
 use pyo3::prelude::{
-    pyclass, pyfunction, pymodule, Py, PyAny, PyModule, PyObject, PyResult, Python,
+    pyclass, pyfunction, pymodule, Py, PyAny, PyErr, PyModule, PyObject, PyResult, Python,
 };
 use pyo3::types::{PyBool, PyIterator};
 use pyo3::{wrap_pyfunction, wrap_pymodule};
@@ -12,47 +13,77 @@ use toid::high_layer_trial::num as toid_num;
 use toid::high_layer_trial::phrase_operation;
 
 use super::data::music_info::{
-    Beat, ChordProgression, Phrase, Pitch, PitchInOctave, PitchInterval, Scale,
+    Beat, ChordProgression, Phrase, Pitch, PitchInOctave, PitchInterval, Scale, ToidPhrase,
 };
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
     let toid_phrase = music_language::num_lang::parse_num_lang(s, octave, key);
     Phrase {
-        phrase: toid_phrase,
+        phrase: ToidPhrase::Pitch(toid_phrase),
     }
 }
 
 #[pyfunction]
 fn change_key(phrase: Phrase, key: &PyAny) -> PyResult<Phrase> {
     let key = PitchInterval::from_py_any(key)?;
-    let new_toid_phrase = phrase_operation::change_key(phrase.phrase, key.interval);
-    Ok(Phrase {
-        phrase: new_toid_phrase,
-    })
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_phrase = phrase_operation::change_key(phrase, key.interval);
+        Ok(Phrase {
+            phrase: ToidPhrase::Pitch(new_toid_phrase),
+        })
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn change_pitch_in_key(phrase: Phrase, key: &PyAny, pitch: usize) -> PyResult<Phrase> {
     let key = PitchInOctave::from_py_any(key)?;
-    let new_toid_phrase = phrase_operation::change_pitch_in_key(phrase.phrase, key.pitch, pitch);
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_phrase = phrase_operation::change_pitch_in_key(phrase, key.pitch, pitch);
+        Ok(Phrase {
+            phrase: ToidPhrase::Pitch(new_toid_phrase),
+        })
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
+}
+
+#[pyfunction]
+pub fn concat(phrase1: Phrase, phrase2: Phrase) -> PyResult<Phrase> {
+    let new_toid_phrase = match (phrase1.phrase, phrase2.phrase) {
+        (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => {
+            ToidPhrase::Sample(phrase_operation::concat(phrase1, phrase2))
+        }
+        (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => {
+            ToidPhrase::Pitch(phrase_operation::concat(phrase1, phrase2))
+        }
+        _ => {
+            return Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase type is not equal",
+            ));
+        }
+    };
+
     Ok(Phrase {
         phrase: new_toid_phrase,
     })
 }
 
 #[pyfunction]
-pub fn concat(phrase1: Phrase, phrase2: Phrase) -> Phrase {
-    let new_toid_phrase = phrase_operation::concat(phrase1.phrase, phrase2.phrase);
-    Phrase {
-        phrase: new_toid_phrase,
-    }
-}
-
-#[pyfunction]
 pub fn delay(phrase: Phrase, delay: &PyAny) -> PyResult<Phrase> {
     let delay = Beat::from_py_any(delay)?;
-    let new_toid_phrase = phrase_operation::delay(phrase.phrase, delay.beat);
+    let new_toid_phrase = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => {
+            ToidPhrase::Sample(phrase_operation::delay(phrase, delay.beat))
+        }
+        ToidPhrase::Pitch(phrase) => ToidPhrase::Pitch(phrase_operation::delay(phrase, delay.beat)),
+    };
     Ok(Phrase {
         phrase: new_toid_phrase,
     })
@@ -61,31 +92,60 @@ pub fn delay(phrase: Phrase, delay: &PyAny) -> PyResult<Phrase> {
 #[pyfunction]
 pub fn invert_pitch(phrase: Phrase, center: &PyAny) -> PyResult<Phrase> {
     let center = Pitch::from_py_any(center)?;
-    let new_toid_phrase = phrase_operation::invert_pitch(phrase.phrase, center.pitch);
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_phrase = phrase_operation::invert_pitch(phrase, center.pitch);
+        Ok(Phrase {
+            phrase: ToidPhrase::Pitch(new_toid_phrase),
+        })
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
+}
+
+#[pyfunction]
+pub fn invert_start_order(phrase: Phrase) -> Phrase {
+    let new_toid_phrase = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => {
+            ToidPhrase::Sample(phrase_operation::invert_start_order(phrase))
+        }
+        ToidPhrase::Pitch(phrase) => {
+            ToidPhrase::Pitch(phrase_operation::invert_start_order(phrase))
+        }
+    };
+    Phrase {
+        phrase: new_toid_phrase,
+    }
+}
+
+#[pyfunction]
+pub fn marge(phrase1: Phrase, phrase2: Phrase) -> PyResult<Phrase> {
+    let new_toid_phrase = match (phrase1.phrase, phrase2.phrase) {
+        (ToidPhrase::Sample(phrase1), ToidPhrase::Sample(phrase2)) => {
+            ToidPhrase::Sample(phrase_operation::marge(phrase1, phrase2))
+        }
+        (ToidPhrase::Pitch(phrase1), ToidPhrase::Pitch(phrase2)) => {
+            ToidPhrase::Pitch(phrase_operation::marge(phrase1, phrase2))
+        }
+        _ => {
+            return Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase type is not equal",
+            ));
+        }
+    };
+
     Ok(Phrase {
         phrase: new_toid_phrase,
     })
 }
 
 #[pyfunction]
-pub fn invert_start_order(phrase: Phrase) -> Phrase {
-    let new_toid_phrase = phrase_operation::invert_start_order(phrase.phrase);
-    Phrase {
-        phrase: new_toid_phrase,
-    }
-}
-
-#[pyfunction]
-pub fn marge(phrase1: Phrase, phrase2: Phrase) -> Phrase {
-    let new_toid_phrase = phrase_operation::marge(phrase1.phrase, phrase2.phrase);
-    Phrase {
-        phrase: new_toid_phrase,
-    }
-}
-
-#[pyfunction]
 pub fn shuffle_start(phrase: Phrase) -> Phrase {
-    let new_toid_phrase = phrase_operation::shuffle_start(phrase.phrase);
+    let new_toid_phrase = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => ToidPhrase::Sample(phrase_operation::shuffle_start(phrase)),
+        ToidPhrase::Pitch(phrase) => ToidPhrase::Pitch(phrase_operation::shuffle_start(phrase)),
+    };
     Phrase {
         phrase: new_toid_phrase,
     }
@@ -98,8 +158,17 @@ pub fn split_by_condition<'p>(
     condition: &PyAny,
 ) -> PyResult<(Phrase, Phrase)> {
     let condition = Condition::from_py_any(py, condition)?;
-    let (new_toid_phrase1, new_toid_phrase2) =
-        phrase_operation::split_by_condition(phrase.phrase, condition.value);
+
+    let (new_toid_phrase1, new_toid_phrase2) = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => {
+            let (ph1, ph2) = phrase_operation::split_by_condition(phrase, condition.value);
+            (ToidPhrase::Sample(ph1), ToidPhrase::Sample(ph2))
+        }
+        ToidPhrase::Pitch(phrase) => {
+            let (ph1, ph2) = phrase_operation::split_by_condition(phrase, condition.value);
+            (ToidPhrase::Pitch(ph1), ToidPhrase::Pitch(ph2))
+        }
+    };
     Ok((
         Phrase {
             phrase: new_toid_phrase1,
@@ -194,7 +263,9 @@ pub fn round_line(
     let scale = scale.scale;
 
     let phrase = phrase_operation::round_line(line_beat, line_pitch, start, duration, scale);
-    Ok(Phrase { phrase })
+    Ok(Phrase {
+        phrase: ToidPhrase::Pitch(phrase),
+    })
 }
 
 #[pyfunction]
@@ -204,7 +275,9 @@ pub fn four_comp(prog: &PyAny, min_pitch: &PyAny, max_pitch: &PyAny) -> PyResult
     let max_pitch = Pitch::from_py_any(max_pitch)?;
 
     let phrase = phrase_operation::four_comp(prog.prog, min_pitch.pitch, max_pitch.pitch);
-    Ok(Phrase { phrase })
+    Ok(Phrase {
+        phrase: ToidPhrase::Pitch(phrase),
+    })
 }
 
 #[pyfunction]
@@ -212,12 +285,17 @@ pub fn four_bass(prog: &PyAny) -> PyResult<Phrase> {
     let prog: ChordProgression = prog.extract()?;
 
     let phrase = phrase_operation::four_bass(prog.prog);
-    Ok(Phrase { phrase })
+    Ok(Phrase {
+        phrase: ToidPhrase::Pitch(phrase),
+    })
 }
 
 #[pyfunction]
 pub fn sixteen_shuffle(phrase: Phrase) -> Phrase {
-    let new_toid_phrase = phrase_operation::sixteen_shuffle(phrase.phrase);
+    let new_toid_phrase = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => ToidPhrase::Sample(phrase_operation::sixteen_shuffle(phrase)),
+        ToidPhrase::Pitch(phrase) => ToidPhrase::Pitch(phrase_operation::sixteen_shuffle(phrase)),
+    };
     Phrase {
         phrase: new_toid_phrase,
     }
@@ -266,58 +344,90 @@ impl Condition {
 #[pyfunction]
 fn pitch_larger(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::pitch_larger(phrase.phrase, pitch.pitch);
-    let gil = Python::acquire_gil();
-    let py = gil.python();
-    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_condition_value =
+            phrase_operation::condition::pitch_larger(phrase, pitch.pitch);
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn pitch_larger_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::pitch_larger_equal(phrase.phrase, pitch.pitch);
-    let gil = Python::acquire_gil();
-    let py = gil.python();
-    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_condition_value =
+            phrase_operation::condition::pitch_larger_equal(phrase, pitch.pitch);
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn pitch_smaller(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::pitch_smaller(phrase.phrase, pitch.pitch);
-    let gil = Python::acquire_gil();
-    let py = gil.python();
-    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_condition_value =
+            phrase_operation::condition::pitch_smaller(phrase, pitch.pitch);
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn pitch_smaller_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::pitch_smaller_equal(phrase.phrase, pitch.pitch);
-    let gil = Python::acquire_gil();
-    let py = gil.python();
-    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_condition_value =
+            phrase_operation::condition::pitch_smaller_equal(phrase, pitch.pitch);
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn pitch_equal(phrase: Phrase, pitch: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let pitch = Pitch::from_py_any(pitch)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::pitch_equal(phrase.phrase, pitch.pitch);
-    let gil = Python::acquire_gil();
-    let py = gil.python();
-    Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    if let ToidPhrase::Pitch(phrase) = phrase.phrase {
+        let new_toid_condition_value =
+            phrase_operation::condition::pitch_equal(phrase, pitch.pitch);
+        let gil = Python::acquire_gil();
+        let py = gil.python();
+        Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
+    } else {
+        Err(PyErr::new::<exceptions::ValueError, _>(
+            "phrase is not PitchPhrase",
+        ))
+    }
 }
 
 #[pyfunction]
 fn start_larger(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::start_larger(phrase.phrase, beat.beat);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => phrase_operation::condition::start_larger(phrase, beat.beat),
+        ToidPhrase::Pitch(phrase) => phrase_operation::condition::start_larger(phrase, beat.beat),
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
@@ -326,8 +436,14 @@ fn start_larger(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
 #[pyfunction]
 pub fn start_larger_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::start_larger_equal(phrase.phrase, beat.beat);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => {
+            phrase_operation::condition::start_larger_equal(phrase, beat.beat)
+        }
+        ToidPhrase::Pitch(phrase) => {
+            phrase_operation::condition::start_larger_equal(phrase, beat.beat)
+        }
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
@@ -336,8 +452,10 @@ pub fn start_larger_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<
 #[pyfunction]
 pub fn start_smaller(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::start_smaller(phrase.phrase, beat.beat);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => phrase_operation::condition::start_smaller(phrase, beat.beat),
+        ToidPhrase::Pitch(phrase) => phrase_operation::condition::start_smaller(phrase, beat.beat),
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
@@ -346,8 +464,14 @@ pub fn start_smaller(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>
 #[pyfunction]
 fn start_smaller_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::start_smaller_equal(phrase.phrase, beat.beat);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => {
+            phrase_operation::condition::start_smaller_equal(phrase, beat.beat)
+        }
+        ToidPhrase::Pitch(phrase) => {
+            phrase_operation::condition::start_smaller_equal(phrase, beat.beat)
+        }
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
@@ -356,8 +480,10 @@ fn start_smaller_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<boo
 #[pyfunction]
 fn start_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
     let beat = Beat::from_py_any(beat)?;
-    let new_toid_condition_value =
-        phrase_operation::condition::start_equal(phrase.phrase, beat.beat);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => phrase_operation::condition::start_equal(phrase, beat.beat),
+        ToidPhrase::Pitch(phrase) => phrase_operation::condition::start_equal(phrase, beat.beat),
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
@@ -365,7 +491,10 @@ fn start_equal(phrase: Phrase, beat: &PyAny) -> PyResult<Py<PyArray1<bool>>> {
 
 #[pyfunction]
 fn is_down_beat(phrase: Phrase) -> PyResult<Py<PyArray1<bool>>> {
-    let new_toid_condition_value = phrase_operation::condition::is_down_beat(phrase.phrase);
+    let new_toid_condition_value = match phrase.phrase {
+        ToidPhrase::Sample(phrase) => phrase_operation::condition::is_down_beat(phrase),
+        ToidPhrase::Pitch(phrase) => phrase_operation::condition::is_down_beat(phrase),
+    };
     let gil = Python::acquire_gil();
     let py = gil.python();
     Ok(PyArray1::<bool>::from_vec(py, new_toid_condition_value).to_owned())
