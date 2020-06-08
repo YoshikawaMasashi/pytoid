@@ -2,6 +2,8 @@ import os
 import pathlib
 import time
 
+import numpy
+
 from toid import high_layer_trial  # NOQA
 
 from . import toid
@@ -58,6 +60,18 @@ class SamplePlayer(object):
                 self.player.player.send_track(value, self.player.current_beat, key)
             elif isinstance(value, str):
                 self.player.send_sample_lang(value, key)
+            elif isinstance(value, tuple):
+                if len(value) == 2:
+                    ph = high_layer_trial.encode_rhythm_array(key, value[0], value[1])
+                    self.player.send_sample_phrase(ph, key)
+                elif len(value) == 3:
+                    ph = high_layer_trial.encode_rhythm_array(value[0], value[1], value[2])
+                    self.player.send_sample_phrase(ph, key)
+                else:
+                    raise Exception("invalid value")
+            elif isinstance(value, numpy.ndarray):
+                ph = high_layer_trial.encode_rhythm_array(key, value, 0.5)
+                self.player.send_sample_phrase(ph, key)
             else:
                 raise Exception("invalid value")
         else:
