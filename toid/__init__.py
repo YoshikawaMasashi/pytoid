@@ -59,6 +59,12 @@ class SamplePlayer(object):
         else:
             raise Exception("invalid value")
 
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.player.player.get_sample_track(key, self.player.current_beat)
+        else:
+            raise Exception("invalid key")
+
 
 class Player(object):
     def change_parse_mode(self, mode):
@@ -159,7 +165,7 @@ class Player(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            return self.player.get_track(key, self.current_beat)
+            return self.player.get_pitch_track(key, self.current_beat)
         else:
             raise Exception("invalid key")
 
