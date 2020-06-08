@@ -229,10 +229,10 @@ impl PyObjectProtocol for Phrase {
         let s = match &self.phrase {
             ToidPhrase::Pitch(phrase) => {
                 format!("Phrase(Pitch) {}", serde_json::to_string(&phrase).unwrap())
-            },
+            }
             ToidPhrase::Sample(phrase) => {
                 format!("Sample(Pitch) {}", serde_json::to_string(&phrase).unwrap())
-            },
+            }
         };
         Ok(s)
     }
@@ -241,10 +241,10 @@ impl PyObjectProtocol for Phrase {
         let s = match &self.phrase {
             ToidPhrase::Pitch(phrase) => {
                 format!("Phrase(Pitch) {}", serde_json::to_string(&phrase).unwrap())
-            },
+            }
             ToidPhrase::Sample(phrase) => {
                 format!("Sample(Pitch) {}", serde_json::to_string(&phrase).unwrap())
-            },
+            }
         };
         Ok(s)
     }

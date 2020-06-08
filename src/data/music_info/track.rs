@@ -144,10 +144,10 @@ impl PyObjectProtocol for Track {
         let s = match &self.track {
             ToidTrack::Pitch(track) => {
                 format!("Track(Pitch) {}", serde_json::to_string(&track).unwrap())
-            },
+            }
             ToidTrack::Sample(track) => {
                 format!("Track(Sample) {}", serde_json::to_string(&track).unwrap())
-            },
+            }
         };
         Ok(s)
     }
@@ -156,10 +156,10 @@ impl PyObjectProtocol for Track {
         let s = match &self.track {
             ToidTrack::Pitch(track) => {
                 format!("Track(Pitch) {}", serde_json::to_string(&track).unwrap())
-            },
+            }
             ToidTrack::Sample(track) => {
                 format!("Track(Sample) {}", serde_json::to_string(&track).unwrap())
-            },
+            }
         };
         Ok(s)
     }

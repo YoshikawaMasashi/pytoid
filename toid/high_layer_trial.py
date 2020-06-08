@@ -23,3 +23,5 @@ start_larger = toid.high_layer_trial.start_larger
 is_down_beat = toid.high_layer_trial.is_down_beat
 
 parlin_noise = toid.high_layer_trial.parlin_noise
+
+encode_rhythm_array = toid.high_layer_trial.encode_rhythm_array

@@ -1,3 +1,5 @@
+mod sample_phrase_operation;
+
 use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::exceptions;
@@ -15,6 +17,7 @@ use toid::high_layer_trial::phrase_operation;
 use super::data::music_info::{
     Beat, ChordProgression, Phrase, Pitch, PitchInOctave, PitchInterval, Scale, ToidPhrase,
 };
+use sample_phrase_operation::register_sample_phrase_operation;
 
 #[pyfunction]
 pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
@@ -541,6 +544,8 @@ fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(is_down_beat))?;
 
     m.add_wrapped(wrap_pyfunction!(parlin_noise))?;
+
+    register_sample_phrase_operation(m)?;
 
     Ok(())
 }
