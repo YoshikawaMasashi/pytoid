@@ -20,6 +20,13 @@ impl Instrument {
             instrument: toid_music_info::Instrument::SF2(sf2_name, preset_idx),
         })
     }
+
+    #[classmethod]
+    fn sample(_cls: &PyType, sample_name: String) -> PyResult<Self> {
+        Ok(Instrument {
+            instrument: toid_music_info::Instrument::Sample(sample_name),
+        })
+    }
 }
 
 #[pyproto]

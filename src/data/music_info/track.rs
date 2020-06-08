@@ -142,8 +142,24 @@ impl Track {
 impl PyObjectProtocol for Track {
     fn __str__(&self) -> PyResult<String> {
         let s = match &self.track {
-            ToidTrack::Pitch(track) => serde_json::to_string(&track).unwrap(),
-            ToidTrack::Sample(track) => serde_json::to_string(&track).unwrap(),
+            ToidTrack::Pitch(track) => {
+                format!("Track(Pitch) {}", serde_json::to_string(&track).unwrap())
+            },
+            ToidTrack::Sample(track) => {
+                format!("Track(Sample) {}", serde_json::to_string(&track).unwrap())
+            },
+        };
+        Ok(s)
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let s = match &self.track {
+            ToidTrack::Pitch(track) => {
+                format!("Track(Pitch) {}", serde_json::to_string(&track).unwrap())
+            },
+            ToidTrack::Sample(track) => {
+                format!("Track(Sample) {}", serde_json::to_string(&track).unwrap())
+            },
         };
         Ok(s)
     }

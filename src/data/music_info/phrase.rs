@@ -227,8 +227,24 @@ impl Phrase {
 impl PyObjectProtocol for Phrase {
     fn __str__(&self) -> PyResult<String> {
         let s = match &self.phrase {
-            ToidPhrase::Pitch(phrase) => serde_json::to_string(&phrase).unwrap(),
-            ToidPhrase::Sample(phrase) => serde_json::to_string(&phrase).unwrap(),
+            ToidPhrase::Pitch(phrase) => {
+                format!("Phrase(Pitch) {}", serde_json::to_string(&phrase).unwrap())
+            },
+            ToidPhrase::Sample(phrase) => {
+                format!("Sample(Pitch) {}", serde_json::to_string(&phrase).unwrap())
+            },
+        };
+        Ok(s)
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let s = match &self.phrase {
+            ToidPhrase::Pitch(phrase) => {
+                format!("Phrase(Pitch) {}", serde_json::to_string(&phrase).unwrap())
+            },
+            ToidPhrase::Sample(phrase) => {
+                format!("Sample(Pitch) {}", serde_json::to_string(&phrase).unwrap())
+            },
         };
         Ok(s)
     }
