@@ -5,6 +5,7 @@ import time
 import numpy
 
 from toid import high_layer_trial  # NOQA
+from toid._rhythm_maker import rhythm_maker # NOQA
 
 from . import toid
 from . import mml as mml_mod
