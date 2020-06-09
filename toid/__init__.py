@@ -22,6 +22,7 @@ Instrument = toid.data.Instrument  # NOQA
 Chord = toid.data.Chord  # NOQA
 ChordProgression = toid.data.ChordProgression  # NOQA
 Scale = toid.data.Scale  # NOQA
+Wave = toid.data.Wave  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
