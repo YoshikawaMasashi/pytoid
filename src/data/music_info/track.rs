@@ -45,6 +45,7 @@ impl Track {
                 let toid_track = toid_music_info::Track {
                     phrase: phrase,
                     instrument: instrument.instrument,
+                    effects: vec![],
                     vol,
                     pan,
                 };
@@ -56,6 +57,7 @@ impl Track {
                 let toid_track = toid_music_info::Track {
                     phrase: phrase,
                     instrument: instrument.instrument,
+                    effects: vec![],
                     vol,
                     pan,
                 };
