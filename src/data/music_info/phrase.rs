@@ -153,7 +153,8 @@ impl Phrase {
         }
     }
 
-    fn get_length(&self) -> Beat {
+    #[getter]
+    fn len(&self) -> Beat {
         match &self.phrase {
             ToidPhrase::Pitch(phrase) => Beat {
                 beat: phrase.length,
@@ -164,7 +165,8 @@ impl Phrase {
         }
     }
 
-    fn get_pitchs(&self) -> PyResult<Py<PyArray1<f32>>> {
+    #[getter]
+    fn pitchs(&self) -> PyResult<Py<PyArray1<f32>>> {
         if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let toid_notes_vec = phrase.note_vec();
             let mut pitchs_vec: Vec<f32> = vec![];
@@ -181,7 +183,8 @@ impl Phrase {
         }
     }
 
-    fn get_starts(&self) -> Py<PyArray1<f32>> {
+    #[getter]
+    fn starts(&self) -> Py<PyArray1<f32>> {
         let starts_vec = match &self.phrase {
             ToidPhrase::Pitch(phrase) => {
                 let toid_notes_vec = phrase.note_vec();
@@ -205,7 +208,8 @@ impl Phrase {
         PyArray1::<f32>::from_vec(py, starts_vec).to_owned()
     }
 
-    fn get_durations(&self) -> PyResult<Py<PyArray1<f32>>> {
+    #[getter]
+    fn durations(&self) -> PyResult<Py<PyArray1<f32>>> {
         if let ToidPhrase::Pitch(phrase) = &self.phrase {
             let toid_notes_vec = phrase.note_vec();
             let mut durations_vec: Vec<f32> = vec![];
@@ -247,18 +251,6 @@ impl PyObjectProtocol for Phrase {
             }
         };
         Ok(s)
-    }
-
-    fn __getattr__(&self, name: String) -> PyResult<PyObject> {
-        let gil = Python::acquire_gil();
-        let py = gil.python();
-        match name.as_str() {
-            "len" => Ok(Py::new(py, self.get_length())?.to_object(py)),
-            "starts" => Ok(self.get_starts().to_object(py)),
-            "pitchs" => Ok(self.get_pitchs()?.to_object(py)),
-            "durations" => Ok(self.get_durations()?.to_object(py)),
-            _ => Err(ValueError::py_err("invalid attr")),
-        }
     }
 }
 
