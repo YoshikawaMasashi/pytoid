@@ -27,8 +27,8 @@ Wave = toid.data.Wave  # NOQA
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
 )
-example_drums_path = str(
-    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'drums' / 'drums.toml'
+example_samples_path = str(
+    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'samples' / 'samples.toml'
 )
 
 portaudio_outputter_for_quick = None
@@ -204,9 +204,9 @@ class LocalPlayer(Player):
     def __init__(self):
         self.player = toid.players.LocalPlayer()
         self.player.resource_register(example_sf2_path)
-        self.player.resource_register(example_drums_path)
+        self.player.resource_register(example_samples_path)
         self.default_sf2 = "example_sf2"
-        self.default_sample = "example_drums"
+        self.default_sample = "example_samples"
         self.preset_idx = 0
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)
@@ -218,9 +218,9 @@ class WebSocketPlayer(object):
         self.player = toid.players.WebSocketPlayer(connect_address)
         time.sleep(0.5)
         self.player.resource_register(example_sf2_path)
-        self.player.resource_register(example_drums_path)
+        self.player.resource_register(example_samples_path)
         self.default_sf2 = "example_sf2"
-        self.default_sample = "example_drums"
+        self.default_sample = "example_samples"
         self.preset_idx = 0
         self.sample_player = SamplePlayer(self)
         self.current_beat = toid.data.Beat(0)

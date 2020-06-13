@@ -84,6 +84,6 @@ setup(
     zip_safe=False,
     cmdclass={"test": PyTest, "sdist": CargoModifiedSdist},
     package_data={
-        'toid': ['sample-resource/sf2/*', 'sample-resource/drums/*'],
+        'toid': ['sample-resource/sf2/*', 'sample-resource/samples/*'],
     }
 )
