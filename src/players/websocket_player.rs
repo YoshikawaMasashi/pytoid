@@ -3,7 +3,7 @@ use pyo3::prelude::{pyclass, pymethods, PyAny, PyErr, PyObject, PyResult};
 use std::sync::Arc;
 use std::thread;
 
-use toid::data::music_info::beat as toid_beat;
+use toid::data::music_info as toid_music_info;
 use toid::high_layer_trial::music_language::num_lang::send_num_lang;
 use toid::high_layer_trial::music_language::sample_lang::send_sample_lang;
 use toid::high_layer_trial::music_language::send_phrase;
@@ -14,7 +14,7 @@ use toid::music_state::wave_reader::{WaveReader, WaveReaderEvent};
 use toid::players::player::Player;
 use toid::players::websocket_player;
 
-use super::super::data::music_info::{Beat, Instrument, Phrase, Track};
+use super::super::data::music_info::{Beat, Instrument, Phrase, ToidPhrase, ToidTrack, Track};
 use super::toid_player_holder::ToidPlayerHolder;
 
 #[pyclass]
@@ -113,36 +113,82 @@ impl WebSocketPlayer {
         instrument: Instrument,
     ) -> PyResult<()> {
         let beat = Beat::from_py_any(beat)?;
-        send_phrase::send_phrase(
-            phrase.phrase,
-            beat.beat,
-            track_name,
-            instrument.instrument,
-            1.0,
-            0.0,
-            Arc::clone(&self.player)
-                as Arc<
-                    dyn Player<
-                        MusicState,
-                        MusicStateEvent,
-                        WaveReader,
-                        (Vec<i16>, Vec<i16>),
-                        WaveReaderEvent,
-                    >,
-                >,
-        )
-        .unwrap();
+        match phrase.phrase {
+            ToidPhrase::Pitch(phrase) => {
+                send_phrase::send_pitch_phrase(
+                    phrase,
+                    beat.beat,
+                    track_name,
+                    instrument.instrument,
+                    1.0,
+                    0.0,
+                    Arc::clone(&self.player)
+                        as Arc<
+                            dyn Player<
+                                MusicState,
+                                MusicStateEvent,
+                                WaveReader,
+                                (Vec<i16>, Vec<i16>),
+                                WaveReaderEvent,
+                            >,
+                        >,
+                )
+                .unwrap();
+            }
+            ToidPhrase::Sample(phrase) => {
+                let sample_name = if let toid_music_info::Instrument::Sample(sample_name) =
+                    instrument.instrument
+                {
+                    sample_name
+                } else {
+                    return Err(PyErr::new::<exceptions::ValueError, _>(
+                        "instrument is not sample",
+                    ));
+                };
+                send_phrase::send_sample_phrase(
+                    phrase,
+                    beat.beat,
+                    track_name,
+                    sample_name,
+                    1.0,
+                    0.0,
+                    Arc::clone(&self.player)
+                        as Arc<
+                            dyn Player<
+                                MusicState,
+                                MusicStateEvent,
+                                WaveReader,
+                                (Vec<i16>, Vec<i16>),
+                                WaveReaderEvent,
+                            >,
+                        >,
+                )
+                .unwrap();
+            }
+        }
         Ok(())
     }
 
     fn send_track(&self, track: Track, beat: &PyAny, name: String) -> PyResult<()> {
         let beat = Beat::from_py_any(beat)?;
-        self.player
-            .send_event(MusicStateEvent::SectionStateEvent(
-                beat.beat,
-                SectionStateEvent::NewTrack(name.clone(), track.track),
-            ))
-            .unwrap();
+        match track.track {
+            ToidTrack::Pitch(track) => {
+                self.player
+                    .send_event(MusicStateEvent::SectionStateEvent(
+                        beat.beat,
+                        SectionStateEvent::NewPitchTrack(name.clone(), track),
+                    ))
+                    .unwrap();
+            }
+            ToidTrack::Sample(track) => {
+                self.player
+                    .send_event(MusicStateEvent::SectionStateEvent(
+                        beat.beat,
+                        SectionStateEvent::NewSampleTrack(name.clone(), track),
+                    ))
+                    .unwrap();
+            }
+        }
         Ok(())
     }
 
@@ -178,7 +224,7 @@ impl WebSocketPlayer {
         Ok(())
     }
 
-    fn get_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
+    fn get_pitch_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
         let beat = Beat::from_py_any(beat)?;
         match self
             .player
@@ -186,14 +232,29 @@ impl WebSocketPlayer {
             .get_state()
             .unwrap()
             .get_section_state_by_beat(beat.beat)
-            .get_track(key)
+            .get_pitch_track(key)
         {
-            Some(toid_track) => Ok(Track::from_toid_track(toid_track)),
+            Some(toid_track) => Ok(Track::from_toid_pitch_track(toid_track)),
             None => Err(PyErr::new::<exceptions::ValueError, _>("Track Not Found")),
         }
     }
 
-    fn get_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
+    fn get_sample_track(&self, key: String, beat: &PyAny) -> PyResult<Track> {
+        let beat = Beat::from_py_any(beat)?;
+        match self
+            .player
+            .get_store()
+            .get_state()
+            .unwrap()
+            .get_section_state_by_beat(beat.beat)
+            .get_sample_track(key)
+        {
+            Some(toid_track) => Ok(Track::from_toid_sample_track(toid_track)),
+            None => Err(PyErr::new::<exceptions::ValueError, _>("Track Not Found")),
+        }
+    }
+
+    fn get_pitch_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
         let beat = Beat::from_py_any(beat)?;
         let track_names = self
             .player
@@ -201,7 +262,19 @@ impl WebSocketPlayer {
             .get_state()
             .unwrap()
             .get_section_state_by_beat(beat.beat)
-            .get_track_names();
+            .get_pitch_track_names();
+        Ok(track_names)
+    }
+
+    fn get_sample_track_names(&self, beat: &PyAny) -> PyResult<Vec<String>> {
+        let beat = Beat::from_py_any(beat)?;
+        let track_names = self
+            .player
+            .get_store()
+            .get_state()
+            .unwrap()
+            .get_section_state_by_beat(beat.beat)
+            .get_sample_track_names();
         Ok(track_names)
     }
 
@@ -274,7 +347,7 @@ impl WebSocketPlayer {
     fn change_bpm(&self, bpm: f32) -> PyResult<()> {
         self.player
             .send_event(MusicStateEvent::SchedulingStateEvent(
-                SchedulingStateEvent::ChangeBPM(toid_beat::Beat::from(0), bpm),
+                SchedulingStateEvent::ChangeBPM(toid_music_info::Beat::from(0), bpm),
             ))
             .unwrap();
         Ok(())

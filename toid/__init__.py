@@ -2,7 +2,10 @@ import os
 import pathlib
 import time
 
+import numpy
+
 from toid import high_layer_trial  # NOQA
+from toid._rhythm_maker import rhythm_maker # NOQA
 
 from . import toid
 from . import mml as mml_mod
@@ -16,12 +19,16 @@ Beat = toid.data.Beat  # NOQA
 PitchInterval = toid.data.PitchInterval  # NOQA
 PitchInOctave = toid.data.PitchInOctave  # NOQA
 Instrument = toid.data.Instrument  # NOQA
+Chord = toid.data.Chord  # NOQA
+ChordProgression = toid.data.ChordProgression  # NOQA
+Scale = toid.data.Scale  # NOQA
+Wave = toid.data.Wave  # NOQA
 
 example_sf2_path = str(
     pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'sf2' / 'sf2.toml'
 )
-example_drums_path = str(
-    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'drums' / 'drums.toml'
+example_samples_path = str(
+    pathlib.Path(os.path.dirname(__file__)) / 'sample-resource' / 'samples' / 'samples.toml'
 )
 
 portaudio_outputter_for_quick = None
@@ -49,15 +56,45 @@ class SamplePlayer(object):
 
     def __setitem__(self, key, value):
         if isinstance(key, str):
-            if isinstance(value, str):
+            if isinstance(value, Phrase):
+                self.player.send_sample_phrase(value, key)
+            elif isinstance(value, Track):
+                self.player.player.send_track(value, self.player.current_beat, key)
+            elif isinstance(value, str):
                 self.player.send_sample_lang(value, key)
+            elif isinstance(value, tuple):
+                if len(value) == 2:
+                    ph = high_layer_trial.encode_rhythm_array(key, value[0], value[1])
+                    self.player.send_sample_phrase(ph, key)
+                elif len(value) == 3:
+                    ph = high_layer_trial.encode_rhythm_array(value[0], value[1], value[2])
+                    self.player.send_sample_phrase(ph, key)
+                else:
+                    raise Exception("invalid value")
+            elif isinstance(value, numpy.ndarray):
+                ph = high_layer_trial.encode_rhythm_array(key, value, 0.5)
+                self.player.send_sample_phrase(ph, key)
             else:
                 raise Exception("invalid value")
         else:
             raise Exception("invalid value")
 
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            return self.player.player.get_sample_track(key, self.player.current_beat)
+        else:
+            raise Exception("invalid key")
+
 
 class Player(object):
+    def __init__(self):
+        self.default_sf2 = "example_sf2"
+        self.default_sample = "example_samples"
+        self.preset_idx = 0
+        self.sample_player = SamplePlayer(self)
+        self.current_beat = toid.data.Beat(0)
+        self.parse_mode = "num"
+
     def change_parse_mode(self, mode):
         self.parse_mode = mode
 
@@ -115,8 +152,11 @@ class Player(object):
     def clear_sections(self):
         self.player.clear_sections()
 
-    def get_track_names(self):
-        return self.player.get_track_names(self.current_beat)
+    def get_pitch_track_names(self):
+        return self.player.get_pitch_track_names(self.current_beat)
+
+    def get_sample_track_names(self):
+        return self.player.get_sample_track_names(self.current_beat)
 
     def save_state(self, path):
         self.player.save_state(path)
@@ -124,12 +164,22 @@ class Player(object):
     def load_state(self, path):
         self.player.load_state(path)
 
+    def send_pitch_phrase(self, ph, name):
+        inst = Instrument.sf2(self.default_sf2, self.preset_idx)
+        self.player.send_phrase(
+            ph, self.current_beat, name, inst
+        )
+
+    def send_sample_phrase(self, ph, name):
+        inst = Instrument.sample(self.default_sample)
+        self.player.send_phrase(
+            ph, self.current_beat, name, inst
+        )
+
     def __setitem__(self, key, value):
         if isinstance(key, str):
             if isinstance(value, Phrase):
-                inst = Instrument.sf2(self.default_sf2, self.preset_idx)
-                self.player.send_phrase(
-                    value, self.current_beat, key, inst)
+                self.send_pitch_phrase(value, key)
             elif isinstance(value, Track):
                 self.player.send_track(value, self.current_beat, key)
             elif isinstance(value, tuple):
@@ -153,7 +203,7 @@ class Player(object):
 
     def __getitem__(self, key):
         if isinstance(key, str):
-            return self.player.get_track(key, self.current_beat)
+            return self.player.get_pitch_track(key, self.current_beat)
         else:
             raise Exception("invalid key")
 
@@ -162,27 +212,17 @@ class LocalPlayer(Player):
     def __init__(self):
         self.player = toid.players.LocalPlayer()
         self.player.resource_register(example_sf2_path)
-        self.player.resource_register(example_drums_path)
-        self.default_sf2 = "example_sf2"
-        self.default_sample = "example_drums"
-        self.preset_idx = 0
-        self.sample_player = SamplePlayer(self)
-        self.current_beat = toid.data.Beat(0)
-        self.parse_mode = "num"
+        self.player.resource_register(example_samples_path)
+        super().__init__()
 
 
-class WebSocketPlayer(object):
+class WebSocketPlayer(Player):
     def __init__(self, connect_address):
         self.player = toid.players.WebSocketPlayer(connect_address)
         time.sleep(0.5)
         self.player.resource_register(example_sf2_path)
-        self.player.resource_register(example_drums_path)
-        self.default_sf2 = "example_sf2"
-        self.default_sample = "example_drums"
-        self.preset_idx = 0
-        self.sample_player = SamplePlayer(self)
-        self.current_beat = toid.data.Beat(0)
-        self.parse_mode = "num"
+        self.player.resource_register(example_samples_path)
+        super().__init__()
 
     def sync_start(self):
         self.player.sync_start()

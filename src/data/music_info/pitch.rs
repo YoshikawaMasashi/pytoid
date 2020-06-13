@@ -1,19 +1,19 @@
 use pyo3::class::PyObjectProtocol;
 use pyo3::prelude::{pyclass, pymethods, pyproto, PyAny, PyObject, PyResult};
 
-use toid::data::music_info::pitch as toid_pitch;
+use toid::data::music_info as toid_music_info;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct Pitch {
-    pub pitch: toid_pitch::Pitch,
+    pub pitch: toid_music_info::Pitch,
 }
 
 #[pymethods]
 impl Pitch {
     #[new]
     fn new(pitch: f32) -> Self {
-        let pitch = toid_pitch::Pitch::from(pitch);
+        let pitch = toid_music_info::Pitch::from(pitch);
         Pitch { pitch }
     }
 }
@@ -29,7 +29,7 @@ impl PyObjectProtocol for Pitch {
 impl From<f32> for Pitch {
     fn from(pitch: f32) -> Self {
         Pitch {
-            pitch: toid_pitch::Pitch::from(pitch),
+            pitch: toid_music_info::Pitch::from(pitch),
         }
     }
 }

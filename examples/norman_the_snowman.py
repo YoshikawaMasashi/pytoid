@@ -27,7 +27,7 @@ player['h'] = ph4
 ph5 = hlt.invert_pitch(ph3, 72 - 4 + 2)
 player['i'] = ph5
 
-print(player.get_track_names())
+print(player.get_pitch_track_names())
 
 player.new_section(32)
 player.next_section()

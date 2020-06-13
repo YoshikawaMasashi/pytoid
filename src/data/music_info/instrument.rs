@@ -4,12 +4,12 @@ use pyo3::types::PyType;
 
 use serde_json;
 
-use toid::data::music_info::instrument;
+use toid::data::music_info as toid_music_info;
 
 #[pyclass]
 #[derive(Clone)]
 pub struct Instrument {
-    pub instrument: instrument::Instrument,
+    pub instrument: toid_music_info::Instrument,
 }
 
 #[pymethods]
@@ -17,7 +17,14 @@ impl Instrument {
     #[classmethod]
     fn sf2(_cls: &PyType, sf2_name: String, preset_idx: usize) -> PyResult<Self> {
         Ok(Instrument {
-            instrument: instrument::Instrument::SF2(sf2_name, preset_idx),
+            instrument: toid_music_info::Instrument::SF2(sf2_name, preset_idx),
+        })
+    }
+
+    #[classmethod]
+    fn sample(_cls: &PyType, sample_name: String) -> PyResult<Self> {
+        Ok(Instrument {
+            instrument: toid_music_info::Instrument::Sample(sample_name),
         })
     }
 }
