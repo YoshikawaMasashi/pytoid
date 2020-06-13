@@ -2,9 +2,7 @@ use itertools::izip;
 use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
-use pyo3::conversion::ToPyObject;
 use pyo3::exceptions;
-use pyo3::exceptions::ValueError;
 use pyo3::prelude::{pyclass, pymethods, pyproto, Py, PyAny, PyErr, PyObject, PyResult, Python};
 use pyo3::types::{PySlice, PyType};
 
