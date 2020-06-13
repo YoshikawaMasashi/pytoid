@@ -11,7 +11,7 @@ use toid::data::music_info::Note as toid_note_trait;
 use toid::high_layer_trial::phrase_operation;
 
 use super::super::super::high_layer_trial::split_by_condition;
-use super::{Beat, Pitch};
+use super::{Beat, Pitch, PitchInOctave, PitchInterval};
 
 #[derive(Clone)]
 pub enum ToidPhrase {
@@ -224,7 +224,93 @@ impl Phrase {
         }
     }
 
-    fn sixteen_shuffle(&self) -> Self {
+    fn change_key(&self, key: &PyAny) -> PyResult<Self> {
+        let key = PitchInterval::from_py_any(key)?;
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
+            let new_toid_phrase = phrase_operation::change_key(phrase.clone(), key.interval);
+            Ok(Phrase {
+                phrase: ToidPhrase::Pitch(new_toid_phrase),
+            })
+        } else {
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
+        }
+    }
+
+    fn change_pitch_in_key(&self, key: &PyAny, pitch: usize) -> PyResult<Phrase> {
+        let key = PitchInOctave::from_py_any(key)?;
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
+            let new_toid_phrase =
+                phrase_operation::change_pitch_in_key(phrase.clone(), key.pitch, pitch);
+            Ok(Phrase {
+                phrase: ToidPhrase::Pitch(new_toid_phrase),
+            })
+        } else {
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
+        }
+    }
+
+    fn delay(&self, delay: &PyAny) -> PyResult<Phrase> {
+        let delay = Beat::from_py_any(delay)?;
+        let new_toid_phrase = match &self.phrase {
+            ToidPhrase::Sample(phrase) => {
+                ToidPhrase::Sample(phrase_operation::delay(phrase.clone(), delay.beat))
+            }
+            ToidPhrase::Pitch(phrase) => {
+                ToidPhrase::Pitch(phrase_operation::delay(phrase.clone(), delay.beat))
+            }
+        };
+        Ok(Phrase {
+            phrase: new_toid_phrase,
+        })
+    }
+
+    fn invert_pitch(&self, center: &PyAny) -> PyResult<Phrase> {
+        let center = Pitch::from_py_any(center)?;
+        if let ToidPhrase::Pitch(phrase) = &self.phrase {
+            let new_toid_phrase = phrase_operation::invert_pitch(phrase.clone(), center.pitch);
+            Ok(Phrase {
+                phrase: ToidPhrase::Pitch(new_toid_phrase),
+            })
+        } else {
+            Err(PyErr::new::<exceptions::ValueError, _>(
+                "phrase is not PitchPhrase",
+            ))
+        }
+    }
+
+    fn invert_start_order(&self) -> PyResult<Phrase> {
+        let new_toid_phrase = match &self.phrase {
+            ToidPhrase::Sample(phrase) => {
+                ToidPhrase::Sample(phrase_operation::invert_start_order(phrase.clone()))
+            }
+            ToidPhrase::Pitch(phrase) => {
+                ToidPhrase::Pitch(phrase_operation::invert_start_order(phrase.clone()))
+            }
+        };
+        Ok(Phrase {
+            phrase: new_toid_phrase,
+        })
+    }
+
+    fn shuffle_start(&self) -> PyResult<Phrase> {
+        let new_toid_phrase = match &self.phrase {
+            ToidPhrase::Sample(phrase) => {
+                ToidPhrase::Sample(phrase_operation::shuffle_start(phrase.clone()))
+            }
+            ToidPhrase::Pitch(phrase) => {
+                ToidPhrase::Pitch(phrase_operation::shuffle_start(phrase.clone()))
+            }
+        };
+        Ok(Phrase {
+            phrase: new_toid_phrase,
+        })
+    }
+
+    fn sixteen_shuffle(&self) -> PyResult<Phrase> {
         let new_toid_phrase = match &self.phrase {
             ToidPhrase::Sample(phrase) => {
                 ToidPhrase::Sample(phrase_operation::sixteen_shuffle(phrase.clone()))
@@ -233,9 +319,9 @@ impl Phrase {
                 ToidPhrase::Pitch(phrase_operation::sixteen_shuffle(phrase.clone()))
             }
         };
-        Self {
+        Ok(Self {
             phrase: new_toid_phrase,
-        }
+        })
     }
 }
 
