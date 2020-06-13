@@ -223,6 +223,20 @@ impl Phrase {
             ))
         }
     }
+
+    fn sixteen_shuffle(&self) -> Self {
+        let new_toid_phrase = match &self.phrase {
+            ToidPhrase::Sample(phrase) => {
+                ToidPhrase::Sample(phrase_operation::sixteen_shuffle(phrase.clone()))
+            }
+            ToidPhrase::Pitch(phrase) => {
+                ToidPhrase::Pitch(phrase_operation::sixteen_shuffle(phrase.clone()))
+            }
+        };
+        Self {
+            phrase: new_toid_phrase,
+        }
+    }
 }
 
 #[pyproto]
