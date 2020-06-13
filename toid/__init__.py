@@ -87,6 +87,14 @@ class SamplePlayer(object):
 
 
 class Player(object):
+    def __init__(self):
+        self.default_sf2 = "example_sf2"
+        self.default_sample = "example_samples"
+        self.preset_idx = 0
+        self.sample_player = SamplePlayer(self)
+        self.current_beat = toid.data.Beat(0)
+        self.parse_mode = "num"
+
     def change_parse_mode(self, mode):
         self.parse_mode = mode
 
@@ -205,26 +213,16 @@ class LocalPlayer(Player):
         self.player = toid.players.LocalPlayer()
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_samples_path)
-        self.default_sf2 = "example_sf2"
-        self.default_sample = "example_samples"
-        self.preset_idx = 0
-        self.sample_player = SamplePlayer(self)
-        self.current_beat = toid.data.Beat(0)
-        self.parse_mode = "num"
+        super().__init__()
 
 
-class WebSocketPlayer(object):
+class WebSocketPlayer(Player):
     def __init__(self, connect_address):
         self.player = toid.players.WebSocketPlayer(connect_address)
         time.sleep(0.5)
         self.player.resource_register(example_sf2_path)
         self.player.resource_register(example_samples_path)
-        self.default_sf2 = "example_sf2"
-        self.default_sample = "example_samples"
-        self.preset_idx = 0
-        self.sample_player = SamplePlayer(self)
-        self.current_beat = toid.data.Beat(0)
-        self.parse_mode = "num"
+        super().__init__()
 
     def sync_start(self):
         self.player.sync_start()
