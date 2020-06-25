@@ -2,6 +2,7 @@ from . import toid
 from .mml import mml_to_phrase
 
 parse_num_lang = toid.high_layer_trial.parse_num_lang
+parse_sample_lang = toid.high_layer_trial.parse_sample_lang
 
 change_key = toid.high_layer_trial.change_key
 change_pitch_in_key = toid.high_layer_trial.change_pitch_in_key
