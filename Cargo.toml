@@ -1,6 +1,6 @@
 [package]
 name = "pytoid"
-version = "0.0.12-alpha"
+version = "0.0.13-alpha"
 authors = ["masashi yoshikawa <earnest.marshi@gmail.com>"]
 edition = "2018"
 
@@ -14,8 +14,8 @@ numpy = "0.9.0"
 itertools = "0.9.0"
 
 [dependencies.toid]
-# version = "0.8.0-alpha"
-path = "../toid"
+version = "0.9.0-alpha"
+# path = "../toid"
 
 [dependencies.pyo3]
 version = "0.10.1"
