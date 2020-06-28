@@ -12,6 +12,7 @@ from . import mml as mml_mod
 
 WebSocketPlayerServer = toid.players.WebSocketPlayerServer  # NOQA
 PortAudioOutputter = toid.outputters.PortAudioOutputter  # NOQA
+WaveFileOutputter = toid.outputters.WaveFileOutputter  # NOQA
 Phrase = toid.data.Phrase  # NOQA
 Track = toid.data.Track  # NOQA
 Pitch = toid.data.Pitch  # NOQA

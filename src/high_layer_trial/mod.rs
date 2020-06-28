@@ -28,6 +28,14 @@ pub fn parse_num_lang(s: String, octave: f32, key: f32) -> Phrase {
 }
 
 #[pyfunction]
+pub fn parse_sample_lang(s: String) -> Phrase {
+    let toid_phrase = music_language::sample_lang::parse_sample_lang(s);
+    Phrase {
+        phrase: ToidPhrase::Sample(toid_phrase),
+    }
+}
+
+#[pyfunction]
 fn change_key(phrase: Phrase, key: &PyAny) -> PyResult<Phrase> {
     let key = PitchInterval::from_py_any(key)?;
     if let ToidPhrase::Pitch(phrase) = phrase.phrase {
@@ -515,6 +523,7 @@ fn parlin_noise(size: usize, degree: f32, max: f32, min: f32) -> Py<PyArray1<f32
 #[pymodule]
 fn high_layer_trial(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(parse_num_lang))?;
+    m.add_wrapped(wrap_pyfunction!(parse_sample_lang))?;
 
     m.add_wrapped(wrap_pyfunction!(change_key))?;
     m.add_wrapped(wrap_pyfunction!(change_pitch_in_key))?;
