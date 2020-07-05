@@ -4,3 +4,4 @@ pytoid.egg-info/
 dist/
 toid.egg-info/
 .eggs/
+**/__pycache__/
