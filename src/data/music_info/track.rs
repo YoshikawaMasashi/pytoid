@@ -4,6 +4,7 @@ use pyo3::prelude::{pyclass, pymethods, pyproto, PyErr, PyObject, PyResult};
 
 use toid::data::music_info as toid_music_info;
 
+use super::effect::Effect;
 use super::instrument::Instrument;
 use super::phrase::{Phrase, ToidPhrase};
 
@@ -111,6 +112,17 @@ impl Track {
             },
             ToidTrack::Sample(track) => Self {
                 track: ToidTrack::Sample(track.set_pan(pan)),
+            },
+        }
+    }
+
+    pub fn add_effect(&self, effect: Effect) -> Self {
+        match &self.track {
+            ToidTrack::Pitch(track) => Self {
+                track: ToidTrack::Pitch(track.add_effect(effect.effect)),
+            },
+            ToidTrack::Sample(track) => Self {
+                track: ToidTrack::Sample(track.add_effect(effect.effect)),
             },
         }
     }

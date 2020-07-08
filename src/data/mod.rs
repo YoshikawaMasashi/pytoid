@@ -16,6 +16,7 @@ fn data(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<music_info::Chord>()?;
     m.add_class::<music_info::ChordProgression>()?;
     m.add_class::<music_info::Scale>()?;
+    m.add_class::<music_info::Effect>()?;
 
     m.add_class::<wave::Wave>()?;
     Ok(())
