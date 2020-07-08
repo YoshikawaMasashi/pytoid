@@ -8,6 +8,7 @@ mod pitch_in_octave;
 mod pitch_interval;
 mod scale;
 mod track;
+mod effect;
 
 pub use beat::Beat;
 pub use chord::Chord;
@@ -19,3 +20,4 @@ pub use pitch_in_octave::PitchInOctave;
 pub use pitch_interval::PitchInterval;
 pub use scale::Scale;
 pub use track::{ToidTrack, Track};
+pub use effect::Effect;
