@@ -1,6 +1,7 @@
 mod beat;
 mod chord;
 mod chord_progression;
+mod effect;
 mod instrument;
 mod phrase;
 mod pitch;
@@ -12,6 +13,7 @@ mod track;
 pub use beat::Beat;
 pub use chord::Chord;
 pub use chord_progression::ChordProgression;
+pub use effect::Effect;
 pub use instrument::Instrument;
 pub use phrase::{Phrase, ToidPhrase};
 pub use pitch::Pitch;
