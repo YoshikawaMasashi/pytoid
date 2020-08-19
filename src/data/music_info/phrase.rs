@@ -1,5 +1,4 @@
 use itertools::izip;
-use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::class::{PyMappingProtocol, PyNumberProtocol, PyObjectProtocol};
 use pyo3::exceptions;
@@ -28,17 +27,17 @@ pub struct Phrase {
 fn to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i32> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<f64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     array.extract()
@@ -82,9 +81,9 @@ impl Phrase {
 
         let mut new_toid_phrase = toid_music_info::Phrase::new();
         for (&start, &duration, &pitch) in izip!(
-            starts.as_slice()?,
-            durations.as_slice()?,
-            pitchs.as_slice()?
+            starts.readonly().as_slice()?,
+            durations.readonly().as_slice()?,
+            pitchs.readonly().as_slice()?
         ) {
             let toid_note = toid_music_info::PitchNote {
                 pitch: toid_music_info::Pitch::from(pitch),

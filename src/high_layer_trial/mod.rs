@@ -1,6 +1,5 @@
 mod sample_phrase_operation;
 
-use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::exceptions;
 use pyo3::prelude::{
@@ -197,17 +196,17 @@ fn pyany_to_vec_pyany(pyany: &PyAny) -> PyResult<Vec<&PyAny>> {
 fn pyany_to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i32> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<f64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     array.extract()
@@ -216,7 +215,7 @@ fn pyany_to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
 fn pyany_to_beat_vec(pyany: &PyAny) -> PyResult<Vec<Beat>> {
     if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
         let mut beat_vec = vec![];
-        for &b in pyany.as_slice()? {
+        for &b in pyany.readonly().as_slice()? {
             beat_vec.push(Beat {
                 beat: toid_music_info::Beat::from(b),
             });
@@ -236,7 +235,7 @@ fn pyany_to_beat_vec(pyany: &PyAny) -> PyResult<Vec<Beat>> {
 fn pyany_to_pitch_vec(pyany: &PyAny) -> PyResult<Vec<Pitch>> {
     if let Ok(pyany) = pyany_to_pyarray_f32(pyany) {
         let mut pitch_vec = vec![];
-        for &p in pyany.as_slice()? {
+        for &p in pyany.readonly().as_slice()? {
             pitch_vec.push(Pitch {
                 pitch: toid_music_info::Pitch::from(p),
             });
@@ -333,7 +332,7 @@ impl Condition {
         if let Ok(condition) = condition.extract() {
             let mut cond_vec: Vec<bool> = vec![];
             let np_condition: &PyArray1<bool> = condition;
-            for &value in np_condition.as_slice()? {
+            for &value in np_condition.readonly().as_slice()? {
                 cond_vec.push(value);
             }
             return Ok(Condition::from(cond_vec));

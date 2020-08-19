@@ -6,7 +6,7 @@ use toid::outputters::wave_file_outputter;
 
 use super::super::players::toid_player_holder::ToidPlayerHolder;
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct WaveFileOutputter {
     outputter: Arc<RwLock<wave_file_outputter::WaveFileOutputter>>,
 }

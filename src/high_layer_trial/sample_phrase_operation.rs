@@ -15,7 +15,7 @@ fn encode_rhythm_array(
     let mut toid_phrase = toid_music_info::Phrase::new();
     let interval_beat = Beat::from_py_any(interval_beat)?.beat;
     let mut current_beat = toid_music_info::Beat::from(0);
-    for &value in array.as_slice()? {
+    for &value in array.readonly().as_slice()? {
         if value {
             toid_phrase = toid_phrase.add_note(toid_music_info::SampleNote {
                 sound: sound.clone(),

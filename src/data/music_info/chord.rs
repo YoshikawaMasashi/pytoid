@@ -1,4 +1,3 @@
-use numpy::error::IntoPyErr;
 use numpy::PyArray1;
 use pyo3::prelude::{pyclass, pymethods, PyAny, PyObject, PyResult};
 use pyo3::types::PyType;
@@ -24,17 +23,17 @@ impl Chord {
 fn pyany_to_pyarray_f32<'p>(array: &'p PyAny) -> PyResult<&'p PyArray1<f32>> {
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i32> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<i64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     if let Ok(array) = array.extract() {
         let array: &PyArray1<f64> = array;
-        return array.cast::<f32>(false).or_else(|e| Err(e.into_pyerr()));
+        return array.cast::<f32>(false).or_else(|e| Err(e));
     }
 
     array.extract()
@@ -55,7 +54,7 @@ impl Chord {
 
         if let Ok(chord) = pyany_to_pyarray_f32(chord) {
             let mut pitch_vec = vec![];
-            for &p in chord.as_slice()? {
+            for &p in chord.readonly().as_slice()? {
                 pitch_vec.push(p);
             }
             return Ok(Chord {

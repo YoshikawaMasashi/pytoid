@@ -6,7 +6,7 @@ use toid::outputters::portaudio_outputter;
 
 use super::super::players::toid_player_holder::ToidPlayerHolder;
 
-#[pyclass]
+#[pyclass(unsendable)]
 pub struct PortAudioOutputter {
     outputter: Arc<RwLock<portaudio_outputter::PortAudioOutputter>>,
 }
